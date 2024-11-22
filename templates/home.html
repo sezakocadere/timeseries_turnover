@@ -1,0 +1,28 @@
+{% include "navbar.html" %}
+
+{% include "upload.html" %}
+
+{% include "selection.html" %}
+
+<div style="max-width: 400px; margin-left: 0; margin-top: 24px;">
+    <button class="btn btn-secondary" id="submitButton">
+        <span class="spinner-border spinner-border-sm" id="spinner" style="display: none;"></span>
+        Predict
+    </button>
+</div>
+<script>
+    document.getElementById('submitButton').addEventListener('click', function () {
+        var button = document.getElementById('submitButton');
+        var spinner = document.getElementById('spinner');
+
+        button.disabled = true;
+        spinner.style.display = 'inline-block';
+        button.childNodes[2].style.display = 'none';
+
+        setTimeout(function () {
+            spinner.style.display = 'none';
+            button.childNodes[2].style.display = 'inline';
+            button.disabled = false;
+        }, 2000);
+    });
+</script>
