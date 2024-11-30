@@ -10,18 +10,17 @@
         Predict
     </button>
 </div>
+
 <script>
     document.getElementById('submitButton').addEventListener('click', function () {
         var button = document.getElementById('submitButton');
-        var spinner = document.getElementById('spinner');
+        var spinner = document.querySelector('#submitButton #spinner');
 
         button.disabled = true;
         spinner.style.display = 'inline-block';
-        button.childNodes[2].style.display = 'none';
 
         setTimeout(function () {
             spinner.style.display = 'none';
-            button.childNodes[2].style.display = 'inline';
             button.disabled = false;
         }, 2000);
     });

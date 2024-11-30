@@ -1,7 +1,46 @@
-<div style="max-width: 400px; margin-left: 0; margin-top: 40px;">
-    <div class="input-group mb-3">
-        <input type="file" class="form-control" id="inputGroupFile02" accept=".feather">
-        <label class="input-group-text" for="inputGroupFile02">Upload</label>
+<form method="POST" enctype="multipart/form-data" action="{% url 'upload-file' %}" id="uploadForm">
+    {% csrf_token %}
+    <div style="max-width: 400px; margin: 40px 0 0 0;">
+        <div class="input-group mb-3">
+            <input type="file" class="form-control" name="file" id="uploadArea" accept=".feather" required>
+            <button type="submit" id="fileUploadButton" class="btn btn-primary">Upload
+                <span class="spinner-border spinner-border-sm" id="spinner" style="display:none;"></span>
+            </button>
+        </div>
+        <p id="statusMessage" style="font-size: 14px; color: gray;">Please upload a dataset file (e.g., Feather).</p>
     </div>
-    <p style="font-size: 14px; color: gray;">Please upload a dataset file (e.g., Feather).</p>
-</div>
+</form>
+
+<script>
+    const uploadForm = document.getElementById('uploadForm');
+    const spinner = document.getElementById('spinner');
+    const statusMessage = document.getElementById('statusMessage');
+    const fileUploadButton = document.getElementById('fileUploadButton');
+
+    uploadForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        spinner.style.display = 'inline-block';
+        fileUploadButton.disabled = true;
+
+
+        const formData = new FormData(uploadForm);
+        fetch("{% url 'upload-file' %}", {
+            method: "POST",
+            body: formData,
+        })
+            .then(response => {
+                spinner.style.display = 'none';
+                fileUploadButton.disabled = false;
+                statusMessage.textContent = response.ok
+                    ? "File uploaded successfully!"
+                    : "File upload failed!";
+                statusMessage.style.color = response.ok ? "teal" : "red";
+            })
+            .catch(() => {
+                spinner.style.display = 'none';
+                fileUploadButton.disabled = false;
+                statusMessage.textContent = "An error occurred!";
+                statusMessage.style.color = "red";
+            });
+    });
+</script>
