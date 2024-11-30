@@ -18,9 +18,12 @@ def upload_file(request):
         with open(file_path, 'wb') as f:
             for chunk in uploaded_file.chunks():
                 f.write(chunk)
-        if uploaded_file.name.endswith('.feather'):
-            data = pd.read_feather(file_path)
-        print(data)
+       
 
         return render(request, "home.html")
     return render(request, "home.html")
+
+#def get_locations(request):
+#      uploads_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+#     file_path = os.path.join(uploads_dir, filename)
+    
