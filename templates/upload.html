@@ -3,7 +3,8 @@
     <div style="max-width: 400px; margin: 40px 0 0 0;">
         <div class="input-group mb-3">
             <input type="file" class="form-control" name="file" id="uploadArea" accept=".feather" required>
-            <button type="submit" id="fileUploadButton" class="btn btn-primary">Upload
+            <button type="submit" id="fileUploadButton" class="btn btn-primary">
+                Upload
                 <span class="spinner-border spinner-border-sm" id="spinner" style="display:none;"></span>
             </button>
         </div>
@@ -12,27 +13,33 @@
 </form>
 
 <script>
+    const uploadArea = document.getElementById('uploadArea');
     const uploadForm = document.getElementById('uploadForm');
     const spinner = document.getElementById('spinner');
     const statusMessage = document.getElementById('statusMessage');
     const fileUploadButton = document.getElementById('fileUploadButton');
 
-    uploadForm.addEventListener('submit', function (event) {
+    uploadArea.addEventListener('change', () => {
+        if (uploadArea.files.length > 0) {
+            statusMessage.textContent = `File selected: ${uploadArea.files[0].name}`;
+            statusMessage.style.color = "gray";
+        }
+    });
+
+    uploadForm.addEventListener('submit', (event) => {
         event.preventDefault();
         spinner.style.display = 'inline-block';
         fileUploadButton.disabled = true;
 
-
-        const formData = new FormData(uploadForm);
         fetch("{% url 'upload-file' %}", {
             method: "POST",
-            body: formData,
+            body: new FormData(uploadForm),
         })
             .then(response => {
                 spinner.style.display = 'none';
                 fileUploadButton.disabled = false;
                 statusMessage.textContent = response.ok
-                    ? "File uploaded successfully!"
+                    ? `File uploaded successfully!`
                     : "File upload failed!";
                 statusMessage.style.color = response.ok ? "teal" : "red";
             })
