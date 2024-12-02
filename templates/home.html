@@ -1,31 +1,7 @@
-{% include "navbar.html" %}
-{% include "upload.html" %}
-{% include "selection.html" %}
+{% include "background.html" %}
+{% include "carousel.html" %}
 
-<div style="max-width: 400px; margin-left: 0; margin-top: 24px;">
-    <button class="btn btn-secondary" id="submitButton">
-        <span class="spinner-border spinner-border-sm" id="spinner" style="display: none;"></span>
-        Predict
-    </button>
-</div>
+
 
 {% include "map.html" %}
 
-<script>
-    document.getElementById('submitButton').addEventListener('click', function () {
-        var button = document.getElementById('submitButton');
-        var spinner = document.querySelector('#submitButton #spinner');
-        var mapDiv = document.getElementById('map');
-
-        button.disabled = true;
-        spinner.style.display = 'inline-block';
-
-        setTimeout(function () {
-            spinner.style.display = 'none';
-            button.disabled = false;
-
-            mapDiv.classList.remove('hidden');
-            initializeMap();
-        }, 2000);
-    });
-</script>

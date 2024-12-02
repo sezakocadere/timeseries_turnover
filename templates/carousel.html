@@ -1,0 +1,141 @@
+<div id="carouselExampleIndicators" class="carousel slide">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
+            aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
+            aria-label="Slide 2"></button>
+    </div>
+    <div class="carousel-inner">
+        <div class="carousel-item active d-flex justify-content-center align-items-center" style="height: 100vh;">
+            <div class="card text-center" style="width: 100%; max-width: 600px;">
+                <div class="card-header">
+                    Data Upload
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Upload Your Dataset for Time Series Prediction</h5>
+                    <p class="card-text">The dataset will help generate optimal forecasting results.</p>
+
+                    {% include "uploadfile.html" %}
+                </div>
+                <div class="card-footer text-body-secondary">
+                    Upload the dataset to proceed
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+                <div class="card text-center" style="width: 100%; max-width: 600px;">
+                    <div class="card-header">
+                        Select Option
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Choose a Prediction Model and Date</h5>
+                        <form method="POST" action="#">
+                            <div class="mb-3">
+                                <label for="modelSelect" class="form-label">Select a model and for prediction</label>
+                                {% include "selection.html" %}
+                            </div>
+                            <div>
+
+                                <button class="btn btn-secondary custom-button" id="submitButton">
+                                    <span class="spinner-border spinner-border-sm" id="spinner"
+                                        style="display: none;"></span>
+                                    Predict
+                                </button>
+
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-body-secondary">
+                        Choose your model to proceed
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+        data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+        data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<script>
+    document.getElementById('submitButton').addEventListener('click', function () {
+        var button = document.getElementById('submitButton');
+        var spinner = document.querySelector('#submitButton #spinner');
+        var mapDiv = document.getElementById('map');
+
+        button.disabled = true;
+        spinner.style.display = 'inline-block';
+
+        setTimeout(function () {
+            spinner.style.display = 'none';
+            button.disabled = false;
+
+            mapDiv.classList.remove('hidden');
+            initializeMap();
+        }, 2000);
+    });
+</script>
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadForm = document.getElementById('uploadForm');
+    const spinner = document.getElementById('spinner');
+    const statusMessage = document.getElementById('statusMessage');
+    const fileUploadButton = document.getElementById('fileUploadButton');
+    const carousel = new bootstrap.Carousel(document.getElementById('carouselExampleIndicators'));
+
+    uploadArea.addEventListener('change', () => {
+        if (uploadArea.files.length > 0) {
+            statusMessage.textContent = `File selected: ${uploadArea.files[0].name}`;
+            statusMessage.style.color = "gray";
+        }
+    });
+
+    uploadForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        spinner.style.display = 'inline-block';
+        fileUploadButton.disabled = true;
+
+        fetch("{% url 'upload-file' %}", {
+            method: "POST",
+            body: new FormData(uploadForm),
+        })
+            .then(response => {
+                spinner.style.display = 'none';
+                fileUploadButton.disabled = false;
+                statusMessage.textContent = response.ok
+                    ? `File uploaded successfully!`
+                    : "File upload failed!";
+                statusMessage.style.color = response.ok ? "white" : "red";
+
+                if (response.ok) {
+                    carousel.next();
+                }
+            })
+            .catch(() => {
+                spinner.style.display = 'none';
+                fileUploadButton.disabled = false;
+                statusMessage.textContent = "An error occurred!";
+                statusMessage.style.color = "red";
+            });
+    });
+</script>
+<style>
+    .custom-button {
+        background-color: #235796;
+        color: white;
+        border-color: #183a67;
+    }
+
+    .custom-button:hover {
+        background-color: #1b4374;
+    }
+</style>

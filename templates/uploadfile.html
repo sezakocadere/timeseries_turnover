@@ -1,0 +1,15 @@
+<form method="POST" enctype="multipart/form-data" action="{% url 'upload-file' %}" id="uploadForm">
+    {% csrf_token %}
+    <div class="mb-3">
+        <div class="input-group">
+            <input type="file" class="form-control" name="file" id="uploadArea" accept=".feather" required>
+        </div>
+
+        <button type="submit" id="fileUploadButton" class="btn btn-primary mt-3 custom-button">
+            Upload
+            <span class="spinner-border spinner-border-sm" id="spinner" style="display:none;"></span>
+        </button>
+    </div>
+    <p id="statusMessage" style="font-size: 14px; color: gray;">Please upload a dataset file (e.g.,
+        Feather).</p>
+</form>

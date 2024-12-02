@@ -1,28 +1,31 @@
-
-<div style="max-width: 400px; margin-left: 0; margin-top: 30px;">
-    <label for="datePicker">Prediction Date:</label>
-    <input type="date" id="datePicker" name="date" required>
-    <script>
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('datePicker').setAttribute('min', today);
-    </script>
-</div>
-
-
-<div class="d-flex" style="margin-top: 40px;">
-    <div class="me-4" >
-        <h3 style="text-align:left;">Models</h3>
-
-        <div style="width: 330px; margin-left: 0;">
-            <select class="form-select mb-3">
-                <p style="font-size:160%;"></p>
-                <option selected>LSTM</option>
-                <option value="1">BI-LSTM</option>
-                <option value="2">RF</option>
-            </select>
+<div class="row">
+    <!-- Prediction Date -->
+    <div class="col-sm-6 mb-3 mb-sm-0">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Prediction Date</h5>
+                <input type="date" id="datePicker" name="date" required class="form-control">
+                <script>
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('datePicker').setAttribute('min', today);
+                </script>
+            </div>
         </div>
     </div>
 
-    
+    <!-- Model Selection -->
+    <div class="col-sm-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Choose Prediction Model</h5>
+                <div class="d-flex justify-content-center">
+                    <select class="form-select mb-3" style="width: 100%; max-width: 330px;">
+                        <option selected>LSTM</option>
+                        <option value="1">BI-LSTM</option>
+                        <option value="2">RF</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
