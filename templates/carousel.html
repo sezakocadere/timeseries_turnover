@@ -30,19 +30,18 @@
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Choose a Prediction Model and Date</h5>
-                        <form method="POST" action="#">
+                        <form method="POST" action="{% url 'predict' %}">
+                            {% csrf_token %}
                             <div class="mb-3">
                                 <label for="modelSelect" class="form-label">Select a model and for prediction</label>
                                 {% include "selection.html" %}
                             </div>
                             <div>
-
                                 <button class="btn btn-secondary custom-button" id="submitButton">
                                     <span class="spinner-border spinner-border-sm" id="spinner"
                                         style="display: none;"></span>
                                     Predict
                                 </button>
-
                             </div>
                         </form>
                     </div>
@@ -66,24 +65,6 @@
     </button>
 </div>
 
-<script>
-    document.getElementById('submitButton').addEventListener('click', function () {
-        var button = document.getElementById('submitButton');
-        var spinner = document.querySelector('#submitButton #spinner');
-        var mapDiv = document.getElementById('map');
-
-        button.disabled = true;
-        spinner.style.display = 'inline-block';
-
-        setTimeout(function () {
-            spinner.style.display = 'none';
-            button.disabled = false;
-
-            mapDiv.classList.remove('hidden');
-            initializeMap();
-        }, 2000);
-    });
-</script>
 <script>
     const uploadArea = document.getElementById('uploadArea');
     const uploadForm = document.getElementById('uploadForm');

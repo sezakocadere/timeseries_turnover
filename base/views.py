@@ -38,4 +38,11 @@ def upload_file(request):
     return render(request, "home.html")
 
 
- 
+def predict(request):
+    if request.method == 'POST':
+        model_choice = request.POST.get('modelSelect')  
+        date_choice = request.POST.get('dateSelect')
+    return render(request, "predictpage.html")
+
+def next_page(request):
+    return render(request, "predictpage.html")
