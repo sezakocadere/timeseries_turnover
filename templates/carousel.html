@@ -37,7 +37,7 @@
                                 {% include "selection.html" %}
                             </div>
                             <div>
-                                <button class="btn btn-secondary custom-button" id="submitButton">
+                                <button type="button" class="btn btn-secondary custom-button" id="submitButton" onclick="window.location.href='{% url 'next_page' %}'">
                                     <span class="spinner-border spinner-border-sm" id="spinner"
                                         style="display: none;"></span>
                                     Predict

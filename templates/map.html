@@ -1,42 +1,249 @@
-<div id="map" style="height: 500px; width: 800px; margin-left: 0; margin-top: 30px;"></div>
+<!DOCTYPE html>
+<html lang="en">
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.0/dist/leaflet.markercluster.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Revenue Prediction Tool</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+    <style>
+        #map {
+            height: 280px;
+            width: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
 
-<script>
-    function initializeMap() {
-        var map = L.map('map').setView([49.511979, 11.2811775], 6);
+        .leaflet-control-geocoder-form input {
+            color: black;
+        }
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
+        #search-container {
+            margin: 10px 0;
+        }
 
-        var markers = L.markerClusterGroup();
+        #charts {
+            margin-top: 30px;
+        }
 
-        fetch('/uploads/markers.json')
-            .then(response => response.json())
-            .then(data => {
-                const uniqueMarkers = new Set();
+        .chart-container {
+            height: 100px;
+            width: 100%;
+        }
+    </style>
+</head>
 
-                data.forEach(function (latlng) {
-                    const coordinateString = latlng[0] + ',' + latlng[1];
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="cardformap">
+                    <div id="map" class="card mb-3"></div>
+                </div>
+            </div>
 
-                    if (!uniqueMarkers.has(coordinateString)) {
-                        uniqueMarkers.add(coordinateString);
+            <div class="col-md-4">
+                <div id="store-selection" class="mt-4">
+                    <select id="search-select" class="ui search selection dropdown form-select">
+                        <option value="">Select Store Number</option>
+                    </select>
+                    <button id="show-results" class="btn btn-primary mt-3">Show Results</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        var marker = L.marker([latlng[0], latlng[1]]);
-                        markers.addLayer(marker);
-                    }
+    <div id="charts" class="mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="chart1"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="chart2"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="chart-container">
+                    <canvas id="chart3"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.0/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script>
+        var map, markers, storeData;
+
+        function initializeMap() {
+            map = L.map('map').setView([49.511979, 11.2811775], 6);
+
+            L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {}).addTo(map);
+            L.Control.geocoder().addTo(map);
+
+            markers = L.markerClusterGroup();
+
+            fetch('/uploads/markers.json')
+                .then(response => response.json())
+                .then(data => {
+                    storeData = data;
+                    const uniqueMarkers = new Set();
+                    const storeNumbers = new Set();
+
+                    data.forEach(function (store) {
+                        const store_no = store.store_no;
+                        const latitude = store.latitude;
+                        const longitude = store.longitude;
+
+                        const coordinateString = `${latitude},${longitude}`;
+
+                        storeNumbers.add(store_no);
+
+                        if (!uniqueMarkers.has(coordinateString)) {
+                            uniqueMarkers.add(coordinateString);
+
+                            const marker = L.marker([latitude, longitude])
+                                .bindPopup(`Store No: ${store_no}`, { permanent: true })
+                                .openPopup();
+                            markers.addLayer(marker);
+                        }
+                    });
+
+                    const sortedStoreNumbers = Array.from(storeNumbers).sort((a, b) => a - b);
+
+                    const dropdown = document.getElementById('search-select');
+                    sortedStoreNumbers.forEach(storeNo => {
+                        const option = document.createElement('option');
+                        option.value = storeNo;
+                        option.textContent = storeNo;
+                        dropdown.appendChild(option);
+                    });
+
+                    map.addLayer(markers);
+                })
+                .catch(error => {
+                    console.error('Error fetching or processing markers:', error);
                 });
+        }
 
-                map.addLayer(markers);
-            })
-            .catch(error => {
-                console.error("Error loading markers:", error);
-            });
+        function searchStore() {
+            const storeNo = document.getElementById('search-select').value.trim();
+
+            if (!storeNo) {
+                return;
+            }
+
+            const store = storeData.find(item => item.store_no.toString() === storeNo);
+
+            if (store) {
+                const { latitude, longitude } = store;
+                const latLng = L.latLng(latitude, longitude);
+
+                map.setView(latLng, 14);
+
+                const storeMarker = L.marker(latLng).bindPopup(`Store No: ${storeNo}`, { permanent: true });
+                storeMarker.addTo(map);
+                storeMarker.openPopup();
+            } else {
+                alert("Store number not found: " + storeNo);
+            }
+        }
+
+        document.getElementById('search-select').addEventListener('change', function () {
+            searchStore();
+        });
+
+        document.getElementById('show-results').addEventListener('click', function () {
+            document.getElementById('charts').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        document.addEventListener('DOMContentLoaded', initializeMap);
+    </script>
+
+    <script>
+        $('#search-select').dropdown(); 
+    </script>
+</body>
+
+</html>
+
+
+<style>
+    .cardformap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 820px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        padding: 0px;
+        overflow: hidden;
+        border-radius: 10px;
+        background: #212121;
+        border: 1px solid #313131;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
     }
 
-    window.onload = initializeMap;
-</script>
+    .content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        color: #e8e8e8;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+    }
+
+    .content .heading {
+        font-weight: 700;
+        font-size: 32px;
+    }
+
+    .content .para {
+        line-height: 1.5;
+    }
+
+    .content .btn {
+        color: #e8e8e8;
+        text-decoration: none;
+        padding: 10px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        background: #0974f1;
+        border-radius: 5px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .cardformap:hover {
+        box-shadow: 0 0 20px rgba(9, 117, 241, 0.8);
+        border-color: #0974f1;
+    }
+
+    .content .btn:hover {
+        outline: 2px solid #e8e8e8;
+        background: transparent;
+        color: #e8e8e8;
+    }
+
+    .content .btn:active {
+        box-shadow: none;
+    }
+
+    .row {
+        margin: 0;
+    }
+</style>
