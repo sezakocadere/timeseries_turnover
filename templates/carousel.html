@@ -33,7 +33,7 @@
                         <form method="POST" action="{% url 'predict' %}">
                             {% csrf_token %}
                             <div class="mb-3">
-                                <label for="modelSelect" class="form-label">Select a model and for prediction</label>
+                                <label for="modelSelect" class="form-label">Select a model and date for prediction</label>
                                 {% include "selection.html" %}
                             </div>
                             <div>

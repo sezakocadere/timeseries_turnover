@@ -9,74 +9,387 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        body {
+            background: #111827;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .page-container {
+            padding: 2rem 0;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
         #map {
-            height: 280px;
+            height: 400px;
             width: 100%;
             margin: 0 !important;
             padding: 0 !important;
+            border-radius: 12px;
         }
 
-        .leaflet-control-geocoder-form input {
-            color: black;
+        .map-container {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            margin-bottom: 20px;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
         }
 
-        #search-container {
-            margin: 10px 0;
+        .map-container:hover {
+            box-shadow: 0 0 20px rgba(9, 117, 241, 0.8);
+            border-color: #0974f1;
         }
 
-        #charts {
-            margin-top: 30px;
+        .store-controls {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        .store-controls:hover {
+            box-shadow: 0 0 15px rgba(9, 117, 241, 0.6);
+            border-color: #0974f1;
+        }
+
+        .chart-section {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            padding: 25px;
+            border-radius: 16px;
+            margin-top: 2rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        .chart-section:hover {
+            box-shadow: 0 0 20px rgba(9, 117, 241, 0.8);
+            border-color: #0974f1;
         }
 
         .chart-container {
-            height: 100px;
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 12px;
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            color: #fff;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #3b82f6;
+        }
+
+        .chart-title {
+            color: #a0aec0;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .modern-select {
+            padding: 8px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: #fff;
+            color: #1a202c;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .modern-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .modern-select option {
+            padding: 10px;
+        }
+
+        .modern-button {
+            padding: 8px 25px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #0974f1, #3b82f6);
+            color: white;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(9, 116, 241, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 38px;
+            min-width: 160px;
+            white-space: nowrap;
+        }
+
+        .modern-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(9, 116, 241, 0.3);
+            background: linear-gradient(135deg, #0965d3, #2563eb);
+        }
+
+        .modern-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(9, 116, 241, 0.2);
+        }
+
+        .modern-button .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modern-button.loading .spinner {
+            display: inline-block;
+        }
+
+        .modern-button.loading .button-text {
+            display: none;
+        }
+
+        .input-group-text {
+            border: 1px solid #3b82f6;
+        }
+
+        .input-group-text i {
+            color: #3b82f6;
+        }
+
+        .modern-button {
             width: 100%;
+            justify-content: center;
+        }
+
+        /* Dropdown arama yazısını siyah yapma */
+        .ui.search.dropdown > input.search,
+        .ui.search.dropdown .text {
+            color: #000 !important;
+        }
+
+        .ui.search.dropdown {
+            color: #000 !important;
+        }
+
+        /* Collapse button styles */
+        .collapse-button {
+            background: none;
+            border: none;
+            color: #3b82f6;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .collapse-button:hover {
+            color: #60a5fa;
+        }
+
+        .collapse-button i {
+            transition: transform 0.3s ease;
+        }
+
+        .collapse-button.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        /* Model selection card styles */
+        .model-selection {
+            margin-top: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-8">
-                <div class="cardformap">
-                    <div id="map" class="card mb-3"></div>
+    <div class="page-container">
+        <div class="container">
+            <!-- Map ve Kontrol Bölümü -->
+            <div class="row section">
+                <div class="col-md-8">
+                    <div class="map-container fade-in">
+                        <h3 class="section-title">
+                            <i class="fas fa-map-marked-alt"></i>
+                            Store Locations
+                        </h3>
+                        <div id="map"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="store-controls fade-in">
+                        <h3 class="section-title">
+                            <i class="fas fa-store"></i>
+                            Store Selection
+                        </h3>
+                        <div id="store-selection" class="mt-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <select id="search-select" class="ui search selection dropdown form-select flex-grow-1">
+                                    <option value="">Select Store Number</option>
+                                </select>
+                                <button id="show-results" class="modern-button">
+                                    <div class="spinner"></div>
+                                    <span class="button-text">
+                                        <i class="fas fa-chart-line"></i> Show Results
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- More Options Button -->
+                        <button class="collapse-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#modelSelection" aria-expanded="false" aria-controls="modelSelection">
+                            <i class="fas fa-chevron-down"></i>
+                            More Options
+                        </button>
+
+                        <!-- Model Selection Card -->
+                        <div class="collapse" id="modelSelection">
+                            <div class="store-controls model-selection">
+                                <h3 class="section-title">
+                                    <i class="fas fa-brain"></i>
+                                    Change Model
+                                </h3>
+                                <div class="mt-2">
+                                    <select id="model-select" class="ui search selection dropdown form-select">
+                                        <option value="">Select Model</option>
+                                        <option value="lstm">LSTM</option>
+                                        <option value="prophet">Prophet</option>
+                                        <option value="arima">ARIMA</option>
+                                        <option value="xgboost">XGBoost</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div id="store-selection" class="mt-4">
-                    <select id="search-select" class="ui search selection dropdown form-select">
-                        <option value="">Select Store Number</option>
-                    </select>
-                    <button id="show-results" class="btn btn-primary mt-3">Show Results</button>
+            <!-- İstatistik Kartları -->
+            <div class="stats-container fade-in">
+                <div class="stat-card">
+                    <div class="stat-value">€2.5M</div>
+                    <div class="stat-label">Average Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">15%</div>
+                    <div class="stat-label">Growth Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">98%</div>
+                    <div class="stat-label">Prediction Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">124</div>
+                    <div class="stat-label">Total Stores</div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div id="charts" class="mt-5">
-        <div class="row">
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <canvas id="chart1"></canvas>
+            <!-- Grafik Bölümü -->
+            <div class="chart-section fade-in">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Revenue Analysis
+                </h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="chart-title">Monthly Revenue Trend</div>
+                        <div class="chart-container">
+                            <canvas id="chart1"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="chart-title">Revenue Distribution</div>
+                        <div class="chart-container">
+                            <canvas id="chart2"></canvas>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <canvas id="chart2"></canvas>
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="chart-title">Yearly Performance Comparison</div>
+                        <div class="chart-container">
+                            <canvas id="chart3"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="chart-container">
-                    <canvas id="chart3"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -168,10 +481,23 @@
         });
 
         document.getElementById('show-results').addEventListener('click', function () {
-            document.getElementById('charts').scrollIntoView({ behavior: 'smooth' });
+            const button = this;
+            button.classList.add('loading');
+            
+            setTimeout(() => {
+                button.classList.remove('loading');
+                document.querySelector('.chart-section').scrollIntoView({ behavior: 'smooth' });
+            }, 1000);
         });
 
         document.addEventListener('DOMContentLoaded', initializeMap);
+    </script>
+
+    <script>
+        // Collapse button icon rotation
+        document.querySelector('.collapse-button').addEventListener('click', function() {
+            this.classList.toggle('collapsed');
+        });
     </script>
 
     <script>
@@ -180,70 +506,3 @@
 </body>
 
 </html>
-
-
-<style>
-    .cardformap {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 820px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        padding: 0px;
-        overflow: hidden;
-        border-radius: 10px;
-        background: #212121;
-        border: 1px solid #313131;
-        transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
-    }
-
-    .content {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 20px;
-        color: #e8e8e8;
-        transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
-    }
-
-    .content .heading {
-        font-weight: 700;
-        font-size: 32px;
-    }
-
-    .content .para {
-        line-height: 1.5;
-    }
-
-    .content .btn {
-        color: #e8e8e8;
-        text-decoration: none;
-        padding: 10px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        background: #0974f1;
-        border-radius: 5px;
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .cardformap:hover {
-        box-shadow: 0 0 20px rgba(9, 117, 241, 0.8);
-        border-color: #0974f1;
-    }
-
-    .content .btn:hover {
-        outline: 2px solid #e8e8e8;
-        background: transparent;
-        color: #e8e8e8;
-    }
-
-    .content .btn:active {
-        box-shadow: none;
-    }
-
-    .row {
-        margin: 0;
-    }
-</style>
