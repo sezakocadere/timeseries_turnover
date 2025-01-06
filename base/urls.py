@@ -6,4 +6,5 @@ from . import views
 urlpatterns = [
     path("", views.home, name="home"),
     path("predict/", views.predict, name="predict"),
+    path("download-all-predictions/", views.download_all_predictions, name="download-all-predictions"),
 ]

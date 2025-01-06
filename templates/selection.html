@@ -1,31 +1,39 @@
-<div class="row">
-    <!-- Prediction Date -->
-    <div class="col-sm-6 mb-3 mb-sm-0">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Prediction Date</h5>
-                <input type="date" id="datePicker" name="date" required class="form-control">
-                <script>
-                    const today = new Date().toISOString().split('T')[0];
-                    document.getElementById('datePicker').setAttribute('min', today);
-                </script>
+<form method="POST" action="{% url 'predict' %}">
+    {% csrf_token %}
+    <div class="row">
+        <!-- Prediction Date -->
+        <div class="col-sm-6 mb-3 mb-sm-0">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Prediction Date</h5>
+                    <input type="date" id="datePicker" name="dateSelect" required class="form-control">
+                    <script>
+                        const today = new Date().toISOString().split('T')[0];
+                        document.getElementById('datePicker').setAttribute('min', today);
+                    </script>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Model Selection -->
-    <div class="col-sm-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Choose Prediction Model</h5>
-                <div class="d-flex justify-content-center">
-                    <select class="form-select mb-3" style="width: 100%; max-width: 330px;">
-                        <option selected>LSTM</option>
-                        <option value="1">BI-LSTM</option>
-                        <option value="2">RF</option>
-                    </select>
+        <!-- Model Selection -->
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Choose Prediction Model</h5>
+                    <div class="d-flex justify-content-center">
+                        <select class="form-select mb-3" name="modelSelect" style="width: 100%; max-width: 330px;">
+                            <option value="LSTM" selected>LSTM</option>
+                            <option value="BI-LSTM">BI-LSTM</option>
+                            <option value="RF">RF</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <div class="row mt-3">
+        <div class="col text-center">
+            <button type="submit" class="btn btn-secondary custom-button">Predict</button>
+        </div>
+    </div>
+</form>

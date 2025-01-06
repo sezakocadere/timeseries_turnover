@@ -231,7 +231,6 @@
             justify-content: center;
         }
 
-        /* Dropdown arama yazısını siyah yapma */
         .ui.search.dropdown > input.search,
         .ui.search.dropdown .text {
             color: #000 !important;
@@ -241,7 +240,6 @@
             color: #000 !important;
         }
 
-        /* Collapse button styles */
         .collapse-button {
             background: none;
             border: none;
@@ -268,19 +266,32 @@
             transform: rotate(-90deg);
         }
 
-        /* Model selection card styles */
         .model-selection {
             margin-top: 15px;
             overflow: hidden;
             transition: all 0.3s ease;
         }
+
+        .download-section {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        .download-section:hover {
+            box-shadow: 0 0 20px rgba(9, 117, 241, 0.8);
+            border-color: #0974f1;
+        }
+        
     </style>
 </head>
 
 <body>
     <div class="page-container">
         <div class="container">
-            <!-- Map ve Kontrol Bölümü -->
             <div class="row section">
                 <div class="col-md-8">
                     <div class="map-container fade-in">
@@ -312,13 +323,11 @@
                             </div>
                         </div>
 
-                        <!-- More Options Button -->
                         <button class="collapse-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#modelSelection" aria-expanded="false" aria-controls="modelSelection">
                             <i class="fas fa-chevron-down"></i>
                             More Options
                         </button>
 
-                        <!-- Model Selection Card -->
                         <div class="collapse" id="modelSelection">
                             <div class="store-controls model-selection">
                                 <h3 class="section-title">
@@ -329,52 +338,65 @@
                                     <select id="model-select" class="ui search selection dropdown form-select">
                                         <option value="">Select Model</option>
                                         <option value="lstm">LSTM</option>
-                                        <option value="prophet">Prophet</option>
-                                        <option value="arima">ARIMA</option>
-                                        <option value="xgboost">XGBoost</option>
+                                        <option value="bilstm">BILSTM</option>
+                                        <option value="rf">RF</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="store-controls fade-in mt-3">
+                        <h3 class="section-title">
+                            <i class="fas fa-download"></i>
+                            Download Results
+                        </h3>
+                        <div class="d-flex justify-content-end mt-3">
+                            <button id="downloadAllResults" class="modern-button">
+                                <i class="fas fa-download me-2"></i>
+                                <span class="spinner" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </span>
+                                Download for all predicted stores
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- İstatistik Kartları -->
             <div class="stats-container fade-in">
                 <div class="stat-card">
-                    <div class="stat-value">€2.5M</div>
-                    <div class="stat-label">Average Revenue</div>
+                    <div class="stat-value">28.50</div>
+                    <div class="stat-label">Test RMSE (Original Scale)</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">15%</div>
-                    <div class="stat-label">Growth Rate</div>
+                    <div class="stat-value">147.33</div>
+                    <div class="stat-label">Mean Turnover</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">98%</div>
-                    <div class="stat-label">Prediction Accuracy</div>
+                    <div class="stat-value">19.35%</div>
+                    <div class="stat-label">Percentage Error</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">124</div>
+                    <div class="stat-value">500</div>
                     <div class="stat-label">Total Stores</div>
                 </div>
             </div>
 
-            <!-- Grafik Bölümü -->
             <div class="chart-section fade-in">
                 <h3 class="section-title">
                     <i class="fas fa-chart-line"></i>
-                    Revenue Analysis
+                    Turnover Analysis For Two Weeks
                 </h3>
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="chart-title">Monthly Revenue Trend</div>
+                        <div class="chart-title">Turnover values</div>
                         <div class="chart-container">
                             <canvas id="chart1"></canvas>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="chart-title">Revenue Distribution</div>
+                        <div class="chart-title">Turnover graph</div>
                         <div class="chart-container">
                             <canvas id="chart2"></canvas>
                         </div>
@@ -382,7 +404,7 @@
                 </div>
                 <div class="row mt-4">
                     <div class="col-md-12">
-                        <div class="chart-title">Yearly Performance Comparison</div>
+                        <div class="chart-title">Actual vs Predicted Values</div>
                         <div class="chart-container">
                             <canvas id="chart3"></canvas>
                         </div>
@@ -490,11 +512,51 @@
             }, 1000);
         });
 
+        // Download all results function
+        async function downloadAllResults() {
+            const button = document.getElementById('downloadAllResults');
+            const spinner = button.querySelector('.spinner');
+            
+            try {
+                button.disabled = true;
+                spinner.style.display = 'inline-block';
+                
+                const response = await fetch('/download-all-predictions/', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Download failed: ${errorText}`);
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'store_predictions.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Failed to download results: ' + error.message);
+            } finally {
+                button.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        document.getElementById('downloadAllResults').addEventListener('click', downloadAllResults);
+
         document.addEventListener('DOMContentLoaded', initializeMap);
     </script>
 
     <script>
-        // Collapse button icon rotation
         document.querySelector('.collapse-button').addEventListener('click', function() {
             this.classList.toggle('collapsed');
         });

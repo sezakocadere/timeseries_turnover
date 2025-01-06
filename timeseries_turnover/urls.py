@@ -27,7 +27,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("base.urls")),
     path("upload/", views.upload_file, name='upload-file'),
-    path('predict', views.next_page, name='predict'),
     path('nextpage/', views.next_page, name='next_page'),
 ]
 

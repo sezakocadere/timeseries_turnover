@@ -36,13 +36,6 @@
                                 <label for="modelSelect" class="form-label">Select a model and date for prediction</label>
                                 {% include "selection.html" %}
                             </div>
-                            <div>
-                                <button type="button" class="btn btn-secondary custom-button" id="submitButton" onclick="window.location.href='{% url 'next_page' %}'">
-                                    <span class="spinner-border spinner-border-sm" id="spinner"
-                                        style="display: none;"></span>
-                                    Predict
-                                </button>
-                            </div>
                         </form>
                     </div>
                     <div class="card-footer text-body-secondary">

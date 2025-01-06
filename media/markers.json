@@ -1,0 +1,27 @@
+[
+    {
+        "store_no": "1",
+        "latitude": 41.0082,
+        "longitude": 28.9784
+    },
+    {
+        "store_no": "2",
+        "latitude": 41.0422,
+        "longitude": 29.0089
+    },
+    {
+        "store_no": "3",
+        "latitude": 40.9862,
+        "longitude": 29.0282
+    },
+    {
+        "store_no": "4",
+        "latitude": 41.0215,
+        "longitude": 28.9684
+    },
+    {
+        "store_no": "5",
+        "latitude": 41.0105,
+        "longitude": 28.9881
+    }
+]
