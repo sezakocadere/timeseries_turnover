@@ -1,50 +1,34 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-
+from django.http import HttpResponse, JsonResponse
 import os
 import pandas as pd
 from django.conf import settings
 import json
 from django.shortcuts import render, redirect
-import pickle
+import joblib
 from datetime import datetime, timedelta
 import numpy as np
-import logging
 import openpyxl
-
-logging.basicConfig(
-    filename='debug.log',
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+import logging
 
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'ml_models', 'random_forest_best_model.pkl')
-logging.debug(f"Model path: {MODEL_PATH}")
 
 def load_model():
     try:        
         if not os.path.exists(MODEL_PATH):
             error_msg = f"NOT FOUND MODEL {MODEL_PATH}"
-            logging.error(error_msg)
             raise FileNotFoundError(error_msg)
             
-        with open(MODEL_PATH, 'rb') as file:
-            try:
-                model = pickle.load(file)
-                return model
-            except Exception as e:
-                error_msg = f"Model pick error {str(e)}"
-                logging.error(error_msg)
-                raise
+        model = joblib.load(MODEL_PATH)
+        return model
     except Exception as e:
-        error_msg = f"Model load error - : {str(e)}"
+        error_msg = f"Model load error: {str(e)}"
         logging.error(error_msg)
         raise Exception(error_msg)
 
 def prepare_features(date_str, store_no=None):
     try:
         start_date = datetime.strptime(date_str, '%Y-%m-%d')
-        
         dates = [start_date + timedelta(days=x) for x in range(14)]
         
         features = []
@@ -53,50 +37,52 @@ def prepare_features(date_str, store_no=None):
             
             store_features = {
                 'store_no': store_no_int,
+                'date': d,
                 'day': d.day,
                 'month': d.month,
                 'year': d.year,
                 'dayofweek': d.weekday()
             }
-            
             features.append(store_features)
         
         df = pd.DataFrame(features)
-        df = df[['store_no', 'day', 'month', 'year', 'dayofweek']]
-        
-        logging.debug(f"Hazırlanan feature'lar:\n{df}")
         return df
         
     except Exception as e:
-        logging.error(f"Feature hazırlama hatası: {str(e)}")
+        logging.error(f"Error preparing features: {str(e)}")
         raise e
+
+def predict_turnover(store_data):
+    features = store_data[['store_no', 'day', 'month', 'year', 'dayofweek']].copy()
+    
+    model = load_model()
+    predictions = model.predict(features)
+    
+    results = store_data[['store_no', 'date']].copy()
+    results['predicted_turnover'] = predictions
+    return results
 
 def save_markers_to_json(data, json_file_path):
     markers = data[['store_no', 'latitude', 'longitude']].to_dict(orient='records')
-    
     with open(json_file_path, 'w') as f:
         json.dump(markers, f)
 
 def upload_file(request):
     if request.method == 'POST' and request.FILES.get('file'):
         uploaded_file = request.FILES['file']
-        print("file uploaded")
+        logging.info("File uploaded")
 
         file_path = os.path.join(settings.MEDIA_ROOT, uploaded_file.name)
-
         with open(file_path, 'wb') as f:
             for chunk in uploaded_file.chunks():
                 f.write(chunk)
 
         data = pd.read_feather(file_path)
-        print(data.columns) 
-
         required_columns = {'store_no', 'latitude', 'longitude'}
         if not required_columns.issubset(data.columns):
             return HttpResponse("Uploaded file does not have the required columns: 'store_no', 'latitude', 'longitude'", status=400)
 
         json_file_path = os.path.join(settings.MEDIA_ROOT, 'markers.json')
-
         save_markers_to_json(data, json_file_path)
 
         return render(request, "home.html")
@@ -110,63 +96,42 @@ def predict(request):
         date_choice = request.POST.get('dateSelect')
         store_no = request.POST.get('store_no')
                 
-        if date_choice and model_choice == 'RF' and store_no:  # It will change
+        if date_choice and model_choice == 'RF' and store_no:
             try:
                 request.session['selected_date'] = date_choice
-            
-                try:
-                    model = load_model()
-                except Exception as e:
-                    error_msg = f"Load model error: {str(e)}"
-                    logging.error(error_msg)
-                    context['error'] = error_msg
-                    return render(request, "predictpage.html", context)
+                store_data = prepare_features(date_choice, store_no)
+                predictions = predict_turnover(store_data)
                 
-                features = prepare_features(date_choice, int(store_no))
+                prediction_list = []
+                for _, row in predictions.iterrows():
+                    prediction_list.append((
+                        row['date'].strftime('%Y-%m-%d'),
+                        round(float(row['predicted_turnover']), 2)
+                    ))
                 
-                predictions = model.predict(features)
-                logging.debug(f"Forecast results: {predictions.tolist()}")
-                
-                prediction_dates = [(datetime.strptime(date_choice, '%Y-%m-%d') + timedelta(days=x)).strftime('%Y-%m-%d') 
-                                  for x in range(14)]
-                
-                context['predictions'] = list(zip(prediction_dates, predictions.tolist()))
+                context['predictions'] = prediction_list
                 context['selected_date'] = date_choice
                 context['selected_model'] = model_choice
                 context['selected_store_no'] = store_no
                 
-                logging.info("Forecast part complated")
-                
             except Exception as e:
-                error_msg = f"Tahmin hatası: {str(e)}"
+                error_msg = f"Prediction error: {str(e)}"
                 logging.error(error_msg)
                 context['error'] = error_msg
         else:
-            msg = "Select store number"
-            logging.warning(msg)
-            context['error'] = msg
+            context['error'] = "Select store number"
     
     return render(request, "predictpage.html", context)
 
-def next_page(request):
-    return render(request, "map.html")
-
 def download_all_predictions(request):
     try:
-        model_choice = request.GET.get('model', 'RF')  # Default
+        model_choice = request.GET.get('model', 'RF')
         date_choice = request.session.get('selected_date')
         if not date_choice:
             return HttpResponse("Choose a date", status=400)
             
         if model_choice != 'RF':
             return HttpResponse("Just RF model", status=400)
-            
-        try:
-            model = load_model()
-        except Exception as e:
-            error_msg = f"Load model error: {str(e)}"
-            logging.error(error_msg)
-            return HttpResponse(error_msg, status=500)
         
         try:
             feather_files = [f for f in os.listdir(settings.MEDIA_ROOT) if f.endswith('.feather')]
@@ -186,25 +151,18 @@ def download_all_predictions(request):
         all_predictions = []
         
         for store_no in unique_stores:
-            features = prepare_features(date_choice, store_no)
-            logging.debug(f"Store {store_no} for features:\n{features}")
+            store_data = prepare_features(date_choice, store_no)
+            predictions = predict_turnover(store_data)
             
-            predictions = model.predict(features)
-            logging.debug(f"Store {store_no} for forecasts {predictions}")
-            
-            start_date = datetime.strptime(date_choice, '%Y-%m-%d')
-            dates = [(start_date + timedelta(days=x)).strftime('%Y-%m-%d') for x in range(14)]
-            
-            for date, prediction in zip(dates, predictions):
+            for _, row in predictions.iterrows():
                 all_predictions.append({
-                    'Store_No': store_no,
-                    'Date': date,
-                    'Predicted_Turnover': round(float(prediction), 2)
+                    'Store_No': row['store_no'],
+                    'Date': row['date'].strftime('%Y-%m-%d'),
+                    'Predicted_Turnover': round(float(row['predicted_turnover']), 2)
                 })
         
         df = pd.DataFrame(all_predictions)        
         df = df.sort_values(['Store_No', 'Date'])
-        df = df[['Store_No', 'Date', 'Predicted_Turnover']]
         
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename=store_predictions.xlsx'
@@ -217,7 +175,6 @@ def download_all_predictions(request):
             worksheet.column_dimensions['B'].width = 20  # Date
             worksheet.column_dimensions['C'].width = 25  # Predicted_Turnover
             
-
             for cell in worksheet[1]:
                 cell.font = openpyxl.styles.Font(bold=True)
             
@@ -231,6 +188,35 @@ def download_all_predictions(request):
         error_msg = f"Creating Excel Error: {str(e)}"
         logging.error(error_msg)
         return HttpResponse(error_msg, status=500)
+
+def get_store_predictions(request):
+    try:
+        store_no = request.GET.get('store_no')
+        if not store_no:
+            return JsonResponse({'error': 'Store number is required'}, status=400)
+            
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        store_data = prepare_features(current_date, store_no)
+        results = predict_turnover(store_data)
+        
+        predictions = []
+        for _, row in results.iterrows():
+            predictions.append({
+                'date': row['date'].strftime('%Y-%m-%d'),
+                'turnover': float(row['predicted_turnover'])
+            })
+            
+        return JsonResponse({
+            'store_no': store_no,
+            'predictions': predictions
+        })
+        
+    except Exception as e:
+        logging.error(f"Error getting store predictions: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+def next_page(request):
+    return render(request, "map.html")
 
 def home(request):
     return render(request, "home.html")

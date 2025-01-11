@@ -314,7 +314,7 @@
                                 <select id="search-select" class="ui search selection dropdown form-select flex-grow-1">
                                     <option value="">Select Store Number</option>
                                 </select>
-                                <button id="show-results" class="modern-button">
+                                <button id="showResults" class="modern-button">
                                     <div class="spinner"></div>
                                     <span class="button-text">
                                         <i class="fas fa-chart-line"></i> Show Results
@@ -411,6 +411,23 @@
                     </div>
                 </div>
             </div>
+
+            <div class="chart-section fade-in">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Store Turnover Prediction
+                </h3>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="chart-container">
+                            <canvas id="turnoverGraphContent"></canvas>
+                        </div>
+                        <div class="turnover-values" id="turnoverValuesContent">
+                            <!-- Turnover values will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -421,6 +438,7 @@
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.0/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         var map, markers, storeData;
 
@@ -502,7 +520,7 @@
             searchStore();
         });
 
-        document.getElementById('show-results').addEventListener('click', function () {
+        document.getElementById('showResults').addEventListener('click', function () {
             const button = this;
             button.classList.add('loading');
             
@@ -564,6 +582,211 @@
 
     <script>
         $('#search-select').dropdown(); 
+    </script>
+
+    <script>
+        let turnoverChart = null;
+
+        function showStoreResults() {
+            const storeNo = document.getElementById('search-select').value;
+            if (!storeNo) {
+                alert('Please select a store first');
+                return;
+            }
+
+            // Show loading state
+            document.getElementById('turnoverValuesContent').innerHTML = 'Loading...';
+            if (turnoverChart) {
+                turnoverChart.destroy();
+            }
+
+            // Fetch predictions from backend
+            fetch(`/get_store_predictions/?store_no=${storeNo}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    // Update turnover values
+                    const valuesHtml = data.predictions.map(p => 
+                        `<div class="prediction-item">
+                            <span class="date">${p.date}</span>: 
+                            <span class="turnover">${p.turnover.toFixed(2)}</span>
+                        </div>`
+                    ).join('');
+                    document.getElementById('turnoverValuesContent').innerHTML = valuesHtml;
+
+                    // Update chart
+                    const ctx = document.getElementById('turnoverGraphContent').getContext('2d');
+                    turnoverChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.predictions.map(p => p.date),
+                            datasets: [{
+                                label: 'Predicted Turnover',
+                                data: data.predictions.map(p => p.turnover),
+                                borderColor: '#3b82f6',
+                                tension: 0.1,
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `Store ${storeNo} - 14 Day Turnover Prediction`,
+                                    color: '#fff'
+                                },
+                                legend: {
+                                    labels: {
+                                        color: '#fff'
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { color: '#fff' },
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                                },
+                                y: {
+                                    ticks: { color: '#fff' },
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('turnoverValuesContent').innerHTML = `Error: ${error.message}`;
+                    console.error('Error:', error);
+                });
+        }
+
+        // Add event listener to Show Results button
+        document.getElementById('showResults').addEventListener('click', showStoreResults);
+    </script>
+
+    <script>
+        let turnoverValuesChart = null;
+        let turnoverGraphChart = null;
+
+        function showStoreResults() {
+            const storeNo = document.getElementById('search-select').value;
+            if (!storeNo) {
+                alert('Please select a store first');
+                return;
+            }
+
+            // Clear existing charts
+            if (turnoverValuesChart) {
+                turnoverValuesChart.destroy();
+            }
+            if (turnoverGraphChart) {
+                turnoverGraphChart.destroy();
+            }
+
+            // Fetch predictions from backend
+            fetch(`/get_store_predictions/?store_no=${storeNo}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    // Update turnover values chart (chart1)
+                    const ctx1 = document.getElementById('chart1').getContext('2d');
+                    turnoverValuesChart = new Chart(ctx1, {
+                        type: 'bar',
+                        data: {
+                            labels: data.predictions.map(p => p.date),
+                            datasets: [{
+                                label: 'Daily Turnover Values',
+                                data: data.predictions.map(p => p.turnover),
+                                backgroundColor: '#3b82f6',
+                                borderColor: '#3b82f6',
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `Store ${storeNo} - Daily Values`,
+                                    color: '#fff'
+                                },
+                                legend: {
+                                    labels: {
+                                        color: '#fff'
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { color: '#fff' },
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                                },
+                                y: {
+                                    ticks: { color: '#fff' },
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                                }
+                            }
+                        }
+                    });
+
+                    // Update turnover graph (chart2)
+                    const ctx2 = document.getElementById('chart2').getContext('2d');
+                    turnoverGraphChart = new Chart(ctx2, {
+                        type: 'line',
+                        data: {
+                            labels: data.predictions.map(p => p.date),
+                            datasets: [{
+                                label: 'Turnover Trend',
+                                data: data.predictions.map(p => p.turnover),
+                                borderColor: '#3b82f6',
+                                tension: 0.1,
+                                fill: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `Store ${storeNo} - Trend Analysis`,
+                                    color: '#fff'
+                                },
+                                legend: {
+                                    labels: {
+                                        color: '#fff'
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { color: '#fff' },
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                                },
+                                y: {
+                                    ticks: { color: '#fff' },
+                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(`Error: ${error.message}`);
+                });
+        }
+
+        // Add event listener to Show Results button
+        document.getElementById('showResults').addEventListener('click', showStoreResults);
     </script>
 </body>
 
