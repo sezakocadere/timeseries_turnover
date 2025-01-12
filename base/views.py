@@ -9,7 +9,7 @@ import joblib
 from datetime import datetime, timedelta
 import numpy as np
 import openpyxl
-import logging
+import io
 
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'ml_models', 'random_forest_best_model.pkl')
 
@@ -23,7 +23,6 @@ def load_model():
         return model
     except Exception as e:
         error_msg = f"Model load error: {str(e)}"
-        logging.error(error_msg)
         raise Exception(error_msg)
 
 def prepare_features(date_str, store_no=None):
@@ -49,7 +48,6 @@ def prepare_features(date_str, store_no=None):
         return df
         
     except Exception as e:
-        logging.error(f"Error preparing features: {str(e)}")
         raise e
 
 def predict_turnover(store_data):
@@ -70,8 +68,6 @@ def save_markers_to_json(data, json_file_path):
 def upload_file(request):
     if request.method == 'POST' and request.FILES.get('file'):
         uploaded_file = request.FILES['file']
-        logging.info("File uploaded")
-
         file_path = os.path.join(settings.MEDIA_ROOT, uploaded_file.name)
         with open(file_path, 'wb') as f:
             for chunk in uploaded_file.chunks():
@@ -116,7 +112,6 @@ def predict(request):
                 
             except Exception as e:
                 error_msg = f"Prediction error: {str(e)}"
-                logging.error(error_msg)
                 context['error'] = error_msg
         else:
             context['error'] = "Select store number"
@@ -145,7 +140,6 @@ def download_all_predictions(request):
                 return HttpResponse("Can not found store number in dataset", status=400)
         except Exception as e:
             error_msg = f"Dataset reading error: {str(e)}"
-            logging.error(error_msg)
             return HttpResponse(error_msg, status=500)
         
         all_predictions = []
@@ -186,7 +180,6 @@ def download_all_predictions(request):
         return response
     except Exception as e:
         error_msg = f"Creating Excel Error: {str(e)}"
-        logging.error(error_msg)
         return HttpResponse(error_msg, status=500)
 
 def get_store_predictions(request):
@@ -206,14 +199,77 @@ def get_store_predictions(request):
                 'turnover': float(row['predicted_turnover'])
             })
             
+        df = pd.read_feather('uploads/file.feather')
+        df['date'] = pd.to_datetime(df['date'])
+        store_actuals = df[
+            (df['store_no'] == int(store_no)) & 
+            (df['date'].dt.year == 2023)
+        ].sort_values('date')
+        
+        actual_values = []
+        historical_predictions = []
+        
+        for _, actual_row in store_actuals.iterrows():
+            actual_date = actual_row['date']
+            
+            actual_values.append({
+                'date': actual_date.strftime('%Y-%m-%d'),
+                'turnover': float(actual_row['turnover'])
+            })
+            
+            store_data = prepare_features(actual_date.strftime('%Y-%m-%d'), store_no)
+            result = predict_turnover(store_data)
+            if not result.empty:
+                historical_predictions.append({
+                    'date': actual_date.strftime('%Y-%m-%d'),
+                    'turnover': float(result.iloc[0]['predicted_turnover'])
+                })
+            
         return JsonResponse({
             'store_no': store_no,
-            'predictions': predictions
+            'predictions': predictions,
+            'actual_2023': actual_values,
+            'predicted_2023': historical_predictions
         })
         
     except Exception as e:
-        logging.error(f"Error getting store predictions: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
+def download_store_predictions(request):
+    try:
+        store_no = request.GET.get('store_no')
+        if not store_no:
+            return HttpResponse('Store number is required', status=400)
+            
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        store_data = prepare_features(current_date, store_no)
+        results = predict_turnover(store_data)
+        
+        output = io.BytesIO()
+        workbook = openpyxl.Workbook()
+        worksheet = workbook.active
+        worksheet.title = f'Store {store_no} Predictions'
+        
+        worksheet['A1'] = 'Date'
+        worksheet['B1'] = 'Predicted Turnover'
+        
+        for idx, (_, row) in enumerate(results.iterrows(), start=2):
+            worksheet[f'A{idx}'] = row['date'].strftime('%Y-%m-%d')
+            worksheet[f'B{idx}'] = float(row['predicted_turnover'])
+            
+        workbook.save(output)
+        output.seek(0)
+        
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename=store_{store_no}_predictions.xlsx'
+        
+        return response
+        
+    except Exception as e:
+        return HttpResponse(str(e), status=500)
 
 def next_page(request):
     return render(request, "map.html")

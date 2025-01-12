@@ -34,7 +34,7 @@
             <div class="col-12">
                 <div class="card bg-dark">
                     <div class="card-header">
-                        <h5 class="card-title">Tahmin Sonuçları - {{ selected_date }} ({{ selected_model }})</h5>
+                        <h5 class="card-title">Prediction Results - {{ selected_date }} ({{ selected_model }})</h5>
                     </div>
                     <div class="card-body">
                         <canvas id="predictionChart"></canvas>
@@ -45,8 +45,8 @@
                     <table class="table table-dark table-striped">
                         <thead>
                             <tr>
-                                <th>Tarih</th>
-                                <th>Tahmin Edilen Ciro</th>
+                                <th>Date</th>
+                                <th>Predicted Turnover</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -70,7 +70,7 @@
                     data: {
                         labels: [{% for date, _ in predictions %}'{{ date }}',{% endfor %}],
                         datasets: [{
-                            label: 'Tahmin Edilen Ciro',
+                            label: 'Predicted Turnover',
                             data: [{% for _, prediction in predictions %}{{ prediction }},{% endfor %}],
                             borderColor: 'rgb(75, 192, 192)',
                             tension: 0.1
@@ -84,7 +84,7 @@
                             },
                             title: {
                                 display: true,
-                                text: '14 Günlük Ciro Tahmini'
+                                text: '14 Days Turnover Prediction'
                             }
                         },
                         scales: {

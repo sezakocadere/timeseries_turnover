@@ -286,6 +286,176 @@
             border-color: #0974f1;
         }
         
+        .analysis-card {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .stat-summary {
+            font-size: 0.9em;
+            text-align: right;
+        }
+        
+        .trend-summary {
+            font-size: 0.9em;
+            text-align: right;
+        }
+        
+        .comparison-summary {
+            font-size: 0.9em;
+            text-align: right;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(17, 24, 39, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        .loading-text {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 1rem auto;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Turnover Values List Styles */
+        .turnover-list-container {
+            background: rgba(17, 24, 39, 0.6);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .turnover-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .turnover-list-title {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .turnover-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .turnover-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            transition: background-color 0.2s;
+        }
+
+        .turnover-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .turnover-date {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .turnover-value {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .turnover-list-footer {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .list-stats {
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .download-values-btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .download-values-btn:hover {
+            background: #2563eb;
+        }
+
+        .download-values-btn i {
+            font-size: 1rem;
+        }
     </style>
 </head>
 
@@ -387,18 +557,59 @@
                 <h3 class="section-title">
                     <i class="fas fa-chart-line"></i>
                     Turnover Analysis For Two Weeks
+                    <span id="selectedStoreInfo" style="font-size: 0.9em; margin-left: 10px; color: #3b82f6; display: none;">
+                        (Store: <span id="selectedStoreNumber"></span>)
+                    </span>
                 </h3>
                 <div class="row">
                     <div class="col-md-6">
-                        <div class="chart-title">Turnover values</div>
-                        <div class="chart-container">
-                            <canvas id="chart1"></canvas>
+                        <div class="analysis-card">
+                            <div class="chart-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span>Turnover Values</span>
+                                <div class="stat-summary">
+                                    <div id="avgTurnover" style="color: #3b82f6;">Avg: --</div>
+                                    <div id="maxTurnover" style="color: #10b981;">Max: --</div>
+                                </div>
+                            </div>
+                            <div class="chart-container" style="background: rgba(17, 24, 39, 0.4); border-radius: 8px; padding: 10px;">
+                                <canvas id="chart1"></canvas>
+                            </div>
+                            <div class="turnover-list-container">
+                                <div class="turnover-list-header">
+                                    <div class="turnover-list-title">Daily Values</div>
+                                    <button class="download-values-btn" id="downloadDailyValues">
+                                        <i class="fas fa-download"></i>
+                                        Download Values
+                                    </button>
+                                </div>
+                                <ul class="turnover-list" id="turnoverList">
+                                </ul>
+                                <div class="turnover-list-footer">
+                                    <div class="list-stats">
+                                        <span id="listTotal">Total: --</span> |
+                                        <span id="listAvg">Average: --</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="chart-title">Turnover graph</div>
-                        <div class="chart-container">
-                            <canvas id="chart2"></canvas>
+                        <div class="analysis-card">
+                            <div class="chart-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span>Turnover Trend</span>
+                                <div class="trend-summary">
+                                    <div id="trendDirection" style="color: #3b82f6;">Trend: --</div>
+                                    <div id="predictionPeriod" style="color: #10b981;">Period: 14 Days</div>
+                                </div>
+                            </div>
+                            <div class="chart-container" style="background: rgba(17, 24, 39, 0.4); border-radius: 8px; padding: 10px;">
+                                <canvas id="chart2"></canvas>
+                            </div>
+                            <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
+                                <button id="downloadPredictions" class="modern-button" style="display: none; background: #3b82f6; padding: 10px 20px;">
+                                    <i class="fas fa-download"></i> Download Store Results
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -411,11 +622,32 @@
                 </h3>
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="chart-container">
-                            <canvas id="chart3"></canvas>
+                        <div class="analysis-card">
+                            <div class="chart-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span>Actual vs Predicted Values</span>
+                                <div class="comparison-summary">
+                                    <div id="accuracyScore" style="color: #3b82f6;">Accuracy: --</div>
+                                    <div id="maeScore" style="color: #10b981;">MAE: --</div>
+                                    <div id="mapeScore" style="color: #f59e0b;">MAPE: --%</div>
+                                </div>
+                            </div>
+                            <div class="chart-container" style="background: rgba(17, 24, 39, 0.4); border-radius: 8px; padding: 10px;">
+                                <canvas id="chart3"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Loading store data...</div>
+            <div class="loading-progress">
+                <div class="progress-bar"></div>
             </div>
         </div>
     </div>
@@ -519,7 +751,6 @@
             }, 1000);
         });
 
-        // Download all results function
         async function downloadAllResults() {
             const button = document.getElementById('downloadAllResults');
             const spinner = button.querySelector('.spinner');
@@ -576,121 +807,421 @@
     <script>
         let turnoverValuesChart = null;
         let turnoverGraphChart = null;
+        let comparisonChart = null;
+        let currentStoreNo = null;
+        let currentData = null;
+        let loadingTimeout = null;
+
+        function calculateTrend(data) {
+            const values = data.map(p => p.turnover);
+            const firstHalf = values.slice(0, 7);
+            const secondHalf = values.slice(7);
+            const firstHalfAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+            const secondHalfAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+            
+            if (secondHalfAvg > firstHalfAvg * 1.05) {
+                return 'Increasing ↑';
+            } else if (secondHalfAvg < firstHalfAvg * 0.95) {
+                return 'Decreasing ↓';
+            } else {
+                return 'Stable →';
+            }
+        }
+
+        function calculateAccuracy(actual, predicted) {
+            const n = actual.length;
+            let totalError = 0;
+            let totalActual = 0;
+            let totalPercentageError = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const error = Math.abs(actual[i] - predicted[i]);
+                totalError += error;
+                totalActual += actual[i];
+                
+                if (actual[i] !== 0) { 
+                    totalPercentageError += (error / actual[i]) * 100;
+                }
+            }
+            
+            const mae = totalError / n;
+            const accuracy = 100 * (1 - totalError / totalActual);
+            const mape = totalPercentageError / n;
+            
+            return {
+                accuracy: accuracy.toFixed(2),
+                mae: mae.toFixed(2),
+                mape: mape.toFixed(2)
+            };
+        }
 
         function showStoreResults() {
             const storeNo = document.getElementById('search-select').value;
             if (!storeNo) {
-                alert('Please select a store first');
+                alert('Please select a store');
                 return;
             }
 
-            // Clear existing charts
-            if (turnoverValuesChart) {
-                turnoverValuesChart.destroy();
-            }
-            if (turnoverGraphChart) {
-                turnoverGraphChart.destroy();
-            }
+            currentStoreNo = storeNo;
+            const progressInterval = showLoading();
 
-            // Fetch predictions from backend
+            updateLoadingText('Clearing previous data...');
+            if (turnoverValuesChart) turnoverValuesChart.destroy();
+            if (turnoverGraphChart) turnoverGraphChart.destroy();
+            if (comparisonChart) comparisonChart.destroy();
+
+            // Reset statistics
+            updateLoadingText('Fetching store data...');
+            document.getElementById('turnoverList').innerHTML = '';
+            document.getElementById('listTotal').textContent = 'Total: --';
+            document.getElementById('listAvg').textContent = 'Average: --';
+            document.getElementById('avgTurnover').innerHTML = 'Avg: --';
+            document.getElementById('maxTurnover').innerHTML = 'Max: --';
+            document.getElementById('trendDirection').innerHTML = 'Trend: --';
+            document.getElementById('accuracyScore').innerHTML = 'Accuracy: --';
+            document.getElementById('maeScore').innerHTML = 'MAE: --';
+            document.getElementById('mapeScore').innerHTML = 'MAPE: --%';
+
+            // Update store info display
+            document.getElementById('selectedStoreInfo').style.display = 'inline';
+            document.getElementById('selectedStoreNumber').textContent = storeNo;
+
+            // Fetch data
             fetch(`/get_store_predictions/?store_no=${storeNo}`)
                 .then(response => response.json())
                 .then(data => {
+                    updateLoadingText('Processing data...');
+                    currentData = data; // Global data'yı güncelle
+                    
                     if (data.error) {
                         throw new Error(data.error);
                     }
 
-                    // Update turnover values chart (chart1)
-                    const ctx1 = document.getElementById('chart1').getContext('2d');
-                    turnoverValuesChart = new Chart(ctx1, {
-                        type: 'bar',
-                        data: {
-                            labels: data.predictions.map(p => p.date),
-                            datasets: [{
-                                label: 'Daily Turnover Values',
-                                data: data.predictions.map(p => p.turnover),
-                                backgroundColor: '#3b82f6',
-                                borderColor: '#3b82f6',
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: `Store ${storeNo} - Daily Values`,
-                                    color: '#fff'
-                                },
-                                legend: {
-                                    labels: {
-                                        color: '#fff'
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    ticks: { color: '#fff' },
-                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                                },
-                                y: {
-                                    ticks: { color: '#fff' },
-                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                                }
-                            }
-                        }
-                    });
+                    // Calculate and update statistics
+                    updateLoadingText('Updating statistics...');
+                    const values = data.predictions.map(p => p.turnover);
+                    const avgTurnover = values.reduce((a, b) => a + b, 0) / values.length;
+                    const maxTurnover = Math.max(...values);
+                    const trend = calculateTrend(data.predictions);
+                    const actualValues = data.actual_2023.map(a => a.turnover);
+                    const predictedValues = data.predicted_2023.map(p => p.turnover);
+                    const metrics = calculateAccuracy(actualValues, predictedValues);
 
-                    // Update turnover graph (chart2)
-                    const ctx2 = document.getElementById('chart2').getContext('2d');
-                    turnoverGraphChart = new Chart(ctx2, {
-                        type: 'line',
-                        data: {
-                            labels: data.predictions.map(p => p.date),
-                            datasets: [{
-                                label: 'Turnover Trend',
-                                data: data.predictions.map(p => p.turnover),
-                                borderColor: '#3b82f6',
-                                tension: 0.1,
-                                fill: false
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: `Store ${storeNo} - Trend Analysis`,
-                                    color: '#fff'
-                                },
-                                legend: {
-                                    labels: {
-                                        color: '#fff'
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    ticks: { color: '#fff' },
-                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                                },
-                                y: {
-                                    ticks: { color: '#fff' },
-                                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                                }
-                            }
-                        }
-                    });
+                    // Update UI
+                    updateLoadingText('Creating visualizations...');
+                    document.getElementById('avgTurnover').innerHTML = `Avg: ${avgTurnover.toFixed(2)}`;
+                    document.getElementById('maxTurnover').innerHTML = `Max: ${maxTurnover.toFixed(2)}`;
+                    document.getElementById('trendDirection').innerHTML = `Trend: ${trend}`;
+                    document.getElementById('accuracyScore').innerHTML = `Accuracy: ${metrics.accuracy}%`;
+                    document.getElementById('maeScore').innerHTML = `MAE: ${metrics.mae}`;
+                    document.getElementById('mapeScore').innerHTML = `MAPE: ${metrics.mape}%`;
+
+                    // Update turnover list
+                    updateTurnoverList(data);
+
+                    // Create charts
+                    createCharts(data, storeNo);
+
+                    // Hide loading
+                    clearInterval(progressInterval);
+                    hideLoading();
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    clearInterval(progressInterval);
+                    hideLoading();
                     alert(`Error: ${error.message}`);
                 });
         }
 
-        // Add event listener to Show Results button
+        function updateTurnoverList(data) {
+            const list = document.getElementById('turnoverList');
+            const total = data.predictions.reduce((sum, p) => sum + p.turnover, 0);
+            const avg = total / data.predictions.length;
+            
+            list.innerHTML = '';
+            
+            data.predictions.forEach(p => {
+                const li = document.createElement('li');
+                li.className = 'turnover-item';
+                li.innerHTML = `
+                    <span class="turnover-date">${formatDate(p.date)}</span>
+                    <span class="turnover-value">${formatCurrency(p.turnover)}</span>
+                `;
+                list.appendChild(li);
+            });
+            
+            //  güncelle
+            document.getElementById('listTotal').textContent = `Total: ${formatCurrency(total)}`;
+            document.getElementById('listAvg').textContent = `Average: ${formatCurrency(avg)}`;
+        }
+
+        function createCharts(data, storeNo) {
+            const chartOptions1 = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Daily Turnover Values',
+                        color: '#fff'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Turnover: ${formatCurrency(context.parsed.y)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    y: {
+                        ticks: { 
+                            color: '#fff',
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                }
+            };
+
+            const chartOptions2 = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Turnover Trend',
+                        color: '#fff'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Turnover: ${formatCurrency(context.raw)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    y: {
+                        ticks: { 
+                            color: '#fff',
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                }
+            };
+
+            const chartOptions3 = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Store ${storeNo} - Actual vs Predicted Values (2023)`,
+                        color: '#fff'
+                    },
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    },
+                    y: {
+                        ticks: { 
+                            color: '#fff',
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                }
+            };
+
+            const ctx1 = document.getElementById('chart1').getContext('2d');
+            turnoverValuesChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: data.predictions.map(p => formatDate(p.date)),
+                    datasets: [{
+                        data: data.predictions.map(p => p.turnover),
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1
+                    }]
+                },
+                options: chartOptions1
+            });
+
+            const ctx2 = document.getElementById('chart2').getContext('2d');
+            turnoverGraphChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: data.predictions.map(p => formatDate(p.date)),
+                    datasets: [{
+                        data: data.predictions.map(p => p.turnover),
+                        borderColor: '#3b82f6',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: chartOptions2
+            });
+
+            const ctx3 = document.getElementById('chart3').getContext('2d');
+            comparisonChart = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: data.actual_2023.map(p => formatDate(p.date)),
+                    datasets: [
+                        {
+                            label: 'Actual Values (2023)',
+                            data: data.actual_2023.map(a => a.turnover),
+                            borderColor: '#10b981',
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                            label: 'Predicted Values (2023)',
+                            data: data.predicted_2023.map(p => p.turnover),
+                            borderColor: '#3b82f6',
+                            tension: 0.1,
+                            fill: false
+                        }
+                    ]
+                },
+                options: chartOptions3
+            });
+        }
+
+        // Add event listeners
         document.getElementById('showResults').addEventListener('click', showStoreResults);
+        document.getElementById('downloadPredictions').addEventListener('click', function() {
+            if (!currentStoreNo) {
+                alert('Please select a store first');
+                return;
+            }
+            
+            const button = document.getElementById('downloadPredictions');
+            button.classList.add('loading');
+            
+            window.location.href = `/download-store-predictions/?store_no=${currentStoreNo}`;
+            
+            setTimeout(() => {
+                button.classList.remove('loading');
+            }, 1000);
+        });
+
+        function showLoading() {
+            const overlay = document.querySelector('.loading-overlay');
+            const progressBar = document.querySelector('.progress-bar');
+            overlay.style.display = 'flex';
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                if (progress < 90) {
+                    progress += Math.random() * 10;
+                    progressBar.style.width = `${progress}%`;
+                }
+            }, 200);
+
+            loadingTimeout = setTimeout(() => {
+                clearInterval(interval);
+                hideLoading();
+                alert('Loading is taking longer than expected. Please try again.');
+            }, 30000); 
+
+            return interval;
+        }
+
+        function hideLoading() {
+            const overlay = document.querySelector('.loading-overlay');
+            const progressBar = document.querySelector('.progress-bar');
+            
+            progressBar.style.width = '100%';
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                progressBar.style.width = '0%';
+                if (loadingTimeout) {
+                    clearTimeout(loadingTimeout);
+                    loadingTimeout = null;
+                }
+            }, 300);
+        }
+
+        function updateLoadingText(text) {
+            document.querySelector('.loading-text').textContent = text;
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('tr-TR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(value);
+        }
+
+        document.getElementById('downloadDailyValues').addEventListener('click', function() {
+            if (!currentData || !currentData.predictions) {
+                alert('No data available to download');
+                return;
+            }
+
+            const csvContent = [
+                ['Date', 'Turnover'],
+                ...currentData.predictions.map(p => [p.date, p.turnover])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `daily_turnover_values_${currentStoreNo}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
     </script>
 </body>
 
