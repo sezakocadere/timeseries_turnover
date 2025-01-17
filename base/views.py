@@ -181,8 +181,8 @@ def get_store_predictions(request):
         if not store_no:
             return JsonResponse({'error': 'Store number is required'}, status=400)
             
-        #current_date = datetime.now().strftime('%Y-%m-%d') #buraya bak
-        store_data = prepare_features(date_choice, store_no)
+        current_date = datetime.now().strftime('%Y-%m-%d') #buraya bak
+        store_data = prepare_features(current_date, store_no)
         results = predict_turnover(store_data, model_choice)
         
         predictions = []
