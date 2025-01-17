@@ -10,21 +10,22 @@ from datetime import datetime, timedelta
 import numpy as np
 import openpyxl
 import io
+import tensorflow as tf
+from keras.models import load_model as keras_load_model
 
-MODEL_PATH = os.path.join(settings.BASE_DIR, 'ml_models', 'random_forest_best_model.pkl')
 
-def load_model():
-    try:        
-        if not os.path.exists(MODEL_PATH):
-            error_msg = f"NOT FOUND MODEL {MODEL_PATH}"
-            raise FileNotFoundError(error_msg)
-            
-        model = joblib.load(MODEL_PATH)
-        return model
-    except Exception as e:
-        error_msg = f"Model load error: {str(e)}"
-        raise Exception(error_msg)
+RF_MODEL_PATH = os.path.join(settings.BASE_DIR, 'ml_models', 'random_forest_best_model.pkl')
+LSTM_MODEL_PATH = os.path.join(settings.BASE_DIR, 'ml_models', 'lstm_model.keras')
 
+def load_model(model_choice):
+    if model_choice == 'RF':
+        return joblib.load(RF_MODEL_PATH)
+    elif model_choice == 'LSTM':
+        return keras_load_model(LSTM_MODEL_PATH)
+    else:
+        raise ValueError(f"No Model Type: {model_choice}")
+    
+    
 def prepare_features(date_str, store_no=None):
     try:
         start_date = datetime.strptime(date_str, '%Y-%m-%d')
@@ -50,10 +51,10 @@ def prepare_features(date_str, store_no=None):
     except Exception as e:
         raise e
 
-def predict_turnover(store_data):
+def predict_turnover(store_data, model_choice):
     features = store_data[['store_no', 'day', 'month', 'year', 'dayofweek']].copy()
-    
-    model = load_model()
+    print(model_choice)
+    model = load_model(model_choice)
     predictions = model.predict(features)
     
     results = store_data[['store_no', 'date']].copy()
@@ -91,43 +92,35 @@ def predict(request):
         model_choice = request.POST.get('modelSelect')
         date_choice = request.POST.get('dateSelect')
         store_no = request.POST.get('store_no')
-                
-        if date_choice and model_choice == 'RF' and store_no:
-            try:
-                request.session['selected_date'] = date_choice
-                store_data = prepare_features(date_choice, store_no)
-                predictions = predict_turnover(store_data)
-                
-                prediction_list = []
-                for _, row in predictions.iterrows():
-                    prediction_list.append((
-                        row['date'].strftime('%Y-%m-%d'),
-                        round(float(row['predicted_turnover']), 2)
-                    ))
-                
-                context['predictions'] = prediction_list
-                context['selected_date'] = date_choice
-                context['selected_model'] = model_choice
-                context['selected_store_no'] = store_no
-                
-            except Exception as e:
-                error_msg = f"Prediction error: {str(e)}"
-                context['error'] = error_msg
-        else:
-            context['error'] = "Select store number"
+
+        request.session['selected_model'] = model_choice
+
+        try:
+            request.session['selected_date'] = date_choice
+            store_data = prepare_features(date_choice, store_no)
+            predictions = predict_turnover(store_data, model_choice)
+
+            context['predictions'] = [
+                (row['date'].strftime('%Y-%m-%d'), round(float(row['predicted_turnover']), 2))
+                for _, row in predictions.iterrows()
+            ]
+            context['selected_date'] = date_choice
+            context['selected_model'] = model_choice
+            context['selected_store_no'] = store_no
+
+        except Exception as e:
+            context['error'] = f"Prediction error: {str(e)}"
     
     return render(request, "predictpage.html", context)
 
+
 def download_all_predictions(request):
-    try:
-        model_choice = request.GET.get('model', 'RF')
+        model_choice = request.session.get('selected_model')
         date_choice = request.session.get('selected_date')
+
         if not date_choice:
-            return HttpResponse("Choose a date", status=400)
-            
-        if model_choice != 'RF':
-            return HttpResponse("Just RF model", status=400)
-        
+         return HttpResponse("Choose a date", status=400)
+
         try:
             feather_files = [f for f in os.listdir(settings.MEDIA_ROOT) if f.endswith('.feather')]
             if not feather_files:
@@ -146,7 +139,7 @@ def download_all_predictions(request):
         
         for store_no in unique_stores:
             store_data = prepare_features(date_choice, store_no)
-            predictions = predict_turnover(store_data)
+            predictions = predict_turnover(store_data, model_choice)
             
             for _, row in predictions.iterrows():
                 all_predictions.append({
@@ -178,19 +171,19 @@ def download_all_predictions(request):
                     cell.alignment = openpyxl.styles.Alignment(horizontal='right')
         
         return response
-    except Exception as e:
-        error_msg = f"Creating Excel Error: {str(e)}"
-        return HttpResponse(error_msg, status=500)
 
 def get_store_predictions(request):
     try:
+        model_choice = request.session.get('selected_model', 'RF')
         store_no = request.GET.get('store_no')
+        date_choice = request.session.get('selected_date')
+
         if not store_no:
             return JsonResponse({'error': 'Store number is required'}, status=400)
             
-        current_date = datetime.now().strftime('%Y-%m-%d')
-        store_data = prepare_features(current_date, store_no)
-        results = predict_turnover(store_data)
+        #current_date = datetime.now().strftime('%Y-%m-%d') #buraya bak
+        store_data = prepare_features(date_choice, store_no)
+        results = predict_turnover(store_data, model_choice)
         
         predictions = []
         for _, row in results.iterrows():
@@ -218,7 +211,7 @@ def get_store_predictions(request):
             })
             
             store_data = prepare_features(actual_date.strftime('%Y-%m-%d'), store_no)
-            result = predict_turnover(store_data)
+            result = predict_turnover(store_data, model_choice)
             if not result.empty:
                 historical_predictions.append({
                     'date': actual_date.strftime('%Y-%m-%d'),
@@ -238,12 +231,14 @@ def get_store_predictions(request):
 def download_store_predictions(request):
     try:
         store_no = request.GET.get('store_no')
+        model_choice= request.GET.get('modelSelect')
+
         if not store_no:
             return HttpResponse('Store number is required', status=400)
             
         current_date = datetime.now().strftime('%Y-%m-%d')
         store_data = prepare_features(current_date, store_no)
-        results = predict_turnover(store_data)
+        results = predict_turnover(store_data, model_choice)
         
         output = io.BytesIO()
         workbook = openpyxl.Workbook()
