@@ -17,48 +17,52 @@ from keras.models import load_model as keras_load_model
 RF_MODEL_PATH = os.path.join(settings.BASE_DIR, 'ml_models', 'random_forest_best_model.pkl')
 LSTM_MODEL_PATH = os.path.join(settings.BASE_DIR, 'ml_models', 'lstm_model.keras')
 
+# Global model cache
+_model_cache = {}
+
 def load_model(model_choice):
+    if model_choice in _model_cache:
+        return _model_cache[model_choice]
+    
     if model_choice == 'RF':
-        return joblib.load(RF_MODEL_PATH)
+        model = joblib.load(RF_MODEL_PATH)
     elif model_choice == 'LSTM':
-        return keras_load_model(LSTM_MODEL_PATH)
+        model = keras_load_model(LSTM_MODEL_PATH)
     else:
         raise ValueError(f"No Model Type: {model_choice}")
     
-    
+    _model_cache[model_choice] = model
+    return model
+
 def prepare_features(date_str, store_no=None):
     try:
         start_date = datetime.strptime(date_str, '%Y-%m-%d')
-        dates = [start_date + timedelta(days=x) for x in range(14)]
+        dates = pd.date_range(start=start_date, periods=14, freq='D')
+        store_no_int = int(store_no) if store_no else 101
         
-        features = []
-        for d in dates:
-            store_no_int = int(store_no) if store_no else 101
-            
-            store_features = {
-                'store_no': store_no_int,
-                'date': d,
-                'day': d.day,
-                'month': d.month,
-                'year': d.year,
-                'dayofweek': d.weekday()
-            }
-            features.append(store_features)
+        features = pd.DataFrame({
+            'store_no': [store_no_int] * 14,
+            'date': dates,
+            'day': dates.day,
+            'month': dates.month,
+            'year': dates.year,
+            'dayofweek': dates.dayofweek
+        })
         
-        df = pd.DataFrame(features)
-        return df
+        return features
         
     except Exception as e:
         raise e
 
 def predict_turnover(store_data, model_choice):
-    features = store_data[['store_no', 'day', 'month', 'year', 'dayofweek']].copy()
-    print(model_choice)
+    features = store_data[['store_no', 'day', 'month', 'year', 'dayofweek']].values
     model = load_model(model_choice)
     predictions = model.predict(features)
     
-    results = store_data[['store_no', 'date']].copy()
-    results['predicted_turnover'] = predictions
+    results = pd.DataFrame()
+    results['store_no'] = store_data['store_no']
+    results['date'] = store_data['date']
+    results['predicted_turnover'] = predictions.flatten() if isinstance(predictions, np.ndarray) else predictions
     return results
 
 def save_markers_to_json(data, json_file_path):
