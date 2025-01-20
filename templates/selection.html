@@ -7,10 +7,6 @@
                 <div class="card-body">
                     <h5 class="card-title">Prediction Date</h5>
                     <input type="date" id="datePicker" name="dateSelect" required class="form-control">
-                    <script>
-                        const today = new Date().toISOString().split('T')[0];
-                        document.getElementById('datePicker').setAttribute('min', today);
-                    </script>
                 </div>
             </div>
         </div>
@@ -37,3 +33,28 @@
         </div>
     </div>
 </form>
+
+<script>
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('datePicker').setAttribute('min', today);
+
+    // Listen for model selection changes
+    document.querySelector('select[name="modelSelect"]').addEventListener('change', function() {
+        const modelType = this.value;
+        
+        // Send message to map.html to update statistics
+        if (window.opener) {
+            window.opener.postMessage({ modelType: modelType }, '*');
+        }
+    });
+
+    // Send initial model selection on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const modelSelect = document.querySelector('select[name="modelSelect"]');
+        const initialModel = modelSelect.value;
+        
+        if (window.opener) {
+            window.opener.postMessage({ modelType: initialModel }, '*');
+        }
+    });
+</script>
