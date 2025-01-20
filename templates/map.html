@@ -1246,14 +1246,14 @@
             // Convert model type to uppercase for consistent comparison
             modelType = modelType.toUpperCase();
             
-            if (modelType === 'LSTM' || modelType === 'BI-LSTM') {
-                document.getElementById('rmse-value').textContent = '28.50';
-                document.getElementById('mean-turnover-value').textContent = '147.33';
-                document.getElementById('percentage-error-value').textContent = '19.35%';
-            } else if (modelType === 'RF') {
+            if (modelType === 'LSTM' || modelType === 'lstm') {
                 document.getElementById('rmse-value').textContent = '38.94';
                 document.getElementById('mean-turnover-value').textContent = '132.74';
                 document.getElementById('percentage-error-value').textContent = '29.34%';
+            } else if (modelType === 'RF') {
+                document.getElementById('rmse-value').textContent = '28.50';
+                document.getElementById('mean-turnover-value').textContent = '147.33';
+                document.getElementById('percentage-error-value').textContent = '19.35%';
             }
         }
 
