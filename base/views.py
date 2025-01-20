@@ -185,7 +185,6 @@ def get_store_predictions(request):
         if not store_no:
             return JsonResponse({'error': 'Store number is required'}, status=400)
             
-        #current_date = datetime.now().strftime('%Y-%m-%d') #buraya bak
         store_data = prepare_features(date_choice, store_no)
         results = predict_turnover(store_data, model_choice)
         
@@ -227,6 +226,82 @@ def get_store_predictions(request):
             'predictions': predictions,
             'actual_2023': actual_values,
             'predicted_2023': historical_predictions
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+def get_model_comparison(request):
+    try:
+        store_no = request.GET.get('store_no')
+        date_choice = request.session.get('selected_date')
+
+        if not store_no:
+            return JsonResponse({'error': 'Store number is required'}, status=400)
+            
+        store_data = prepare_features(date_choice, store_no)
+        
+        # Get predictions from both models
+        rf_results = predict_turnover(store_data, 'RF')
+        lstm_results = predict_turnover(store_data, 'LSTM')
+        
+        rf_predictions = []
+        lstm_predictions = []
+        
+        for _, row in rf_results.iterrows():
+            rf_predictions.append({
+                'date': row['date'].strftime('%Y-%m-%d'),
+                'turnover': float(row['predicted_turnover'])
+            })
+            
+        for _, row in lstm_results.iterrows():
+            lstm_predictions.append({
+                'date': row['date'].strftime('%Y-%m-%d'),
+                'turnover': float(row['predicted_turnover'])
+            })
+            
+        df = pd.read_feather('uploads/file.feather')
+        df['date'] = pd.to_datetime(df['date'])
+        store_actuals = df[
+            (df['store_no'] == int(store_no)) & 
+            (df['date'].dt.year == 2023)
+        ].sort_values('date')
+        
+        actual_values = []
+        rf_historical = []
+        lstm_historical = []
+        
+        for _, actual_row in store_actuals.iterrows():
+            actual_date = actual_row['date']
+            
+            actual_values.append({
+                'date': actual_date.strftime('%Y-%m-%d'),
+                'turnover': float(actual_row['turnover'])
+            })
+            
+            store_data = prepare_features(actual_date.strftime('%Y-%m-%d'), store_no)
+            
+            # Get historical predictions from both models
+            rf_result = predict_turnover(store_data, 'RF')
+            lstm_result = predict_turnover(store_data, 'LSTM')
+            
+            if not rf_result.empty:
+                rf_historical.append({
+                    'date': actual_date.strftime('%Y-%m-%d'),
+                    'turnover': float(rf_result.iloc[0]['predicted_turnover'])
+                })
+                
+            if not lstm_result.empty:
+                lstm_historical.append({
+                    'date': actual_date.strftime('%Y-%m-%d'),
+                    'turnover': float(lstm_result.iloc[0]['predicted_turnover'])
+                })
+            
+        return JsonResponse({
+            'store_no': store_no,
+            'actual_2023': actual_values,
+            'rf_predicted_2023': rf_historical,
+            'lstm_predicted_2023': lstm_historical
         })
         
     except Exception as e:
