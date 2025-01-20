@@ -536,16 +536,16 @@
 
             <div class="stats-container fade-in">
                 <div class="stat-card">
-                    <div class="stat-value">28.50</div>
+                    <div class="stat-value" id="rmse-value">28.50</div>
                     <div class="stat-label">Test RMSE (Original Scale)</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">147.33</div>
+                    <div class="stat-value" id="mean-turnover-value">147.33</div>
                     <div class="stat-label">Mean Turnover</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">19.35%</div>
-                    <div class="stat-label">Percentage Error</div>
+                    <div class="stat-value" id="percentage-error-value">19.35%</div>
+                    <div class="stat-label">Error Percentage</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value">500</div>
@@ -1238,6 +1238,44 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        });
+    </script>
+
+    <script>
+        function updateModelStats(modelType) {
+            // Convert model type to uppercase for consistent comparison
+            modelType = modelType.toUpperCase();
+            
+            if (modelType === 'LSTM' || modelType === 'BI-LSTM') {
+                document.getElementById('rmse-value').textContent = '28.50';
+                document.getElementById('mean-turnover-value').textContent = '147.33';
+                document.getElementById('percentage-error-value').textContent = '19.35%';
+            } else if (modelType === 'RF') {
+                document.getElementById('rmse-value').textContent = '38.94';
+                document.getElementById('mean-turnover-value').textContent = '132.74';
+                document.getElementById('percentage-error-value').textContent = '29.34%';
+            }
+        }
+
+        // Listen for model changes from selection.html
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.modelType) {
+                updateModelStats(event.data.modelType);
+                // Update the local model select to match
+                const modelSelect = document.getElementById('model-select');
+                modelSelect.value = event.data.modelType.toLowerCase();
+            }
+        });
+
+        // Listen for local model changes
+        document.getElementById('model-select').addEventListener('change', function() {
+            updateModelStats(this.value);
+        });
+
+        // Initialize with default values
+        document.addEventListener('DOMContentLoaded', function() {
+            const modelSelect = document.getElementById('model-select');
+            updateModelStats(modelSelect.value || 'RF');
         });
     </script>
 </body>
