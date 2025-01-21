@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,6 +54,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="chart-section">
@@ -67,10 +69,9 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const ctx = document.getElementById('modelComparisonChart').getContext('2d');
-            
-            // Function to create the comparison chart
+
             function createComparisonChart(rfMae, rfMape, rfAccuracy, lstmMae, lstmMape, lstmAccuracy) {
                 const data = {
                     labels: ['MAE', 'MAPE', 'Accuracy'],
@@ -117,10 +118,10 @@
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: function(context) {
+                                    label: function (context) {
                                         let value = context.raw;
                                         const metric = context.chart.data.labels[context.dataIndex];
-                                        
+
                                         // Format based on metric type
                                         if (metric === 'MAE') {
                                             value = value.toFixed(2);
@@ -128,7 +129,7 @@
                                             // MAPE and Accuracy are percentages
                                             value = value.toFixed(2) + '%';
                                         }
-                                        
+
                                         return `${context.dataset.label}: ${value}`;
                                     }
                                 }
@@ -142,7 +143,7 @@
                                 },
                                 ticks: {
                                     color: '#fff',
-                                    callback: function(value) {
+                                    callback: function (value) {
                                         return value.toFixed(2);
                                     }
                                 }
@@ -181,10 +182,10 @@
                     const actualValue = actual[i].turnover;
                     const predictedValue = predicted[i].turnover;
                     const error = Math.abs(actualValue - predictedValue);
-                    
+
                     totalError += error;
                     totalActual += actualValue;
-                    
+
                     if (actualValue !== 0) {
                         totalPercentageError += (error / actualValue) * 100;
                     }
@@ -201,8 +202,7 @@
                 };
             }
 
-            // Function to update chart with new values
-            window.updateModelComparison = function(actualValues, rfPredicted, lstmPredicted) {
+            window.updateModelComparison = function (actualValues, rfPredicted, lstmPredicted) {
                 if (window.comparisonChart) {
                     window.comparisonChart.destroy();
                 }
@@ -219,10 +219,9 @@
                     lstmMetrics.accuracy
                 );
             };
-
-            // Initialize with sample data (will be updated with real data)
             window.comparisonChart = createComparisonChart(0, 0, 0, 0, 0, 0);
         });
     </script>
 </body>
+
 </html>
