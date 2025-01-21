@@ -138,8 +138,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .fade-in {
@@ -206,8 +213,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .modern-button.loading .spinner {
@@ -231,7 +243,7 @@
             justify-content: center;
         }
 
-        .ui.search.dropdown > input.search,
+        .ui.search.dropdown>input.search,
         .ui.search.dropdown .text {
             color: #000 !important;
         }
@@ -285,7 +297,7 @@
             box-shadow: 0 0 20px rgba(9, 117, 241, 0.8);
             border-color: #0974f1;
         }
-        
+
         .analysis-card {
             background: rgba(59, 130, 246, 0.1);
             border-radius: 12px;
@@ -293,17 +305,17 @@
             margin-bottom: 20px;
             border: 1px solid rgba(59, 130, 246, 0.2);
         }
-        
+
         .stat-summary {
             font-size: 0.9em;
             text-align: right;
         }
-        
+
         .trend-summary {
             font-size: 0.9em;
             text-align: right;
         }
-        
+
         .comparison-summary {
             font-size: 0.9em;
             text-align: right;
@@ -347,8 +359,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .loading-progress {
@@ -509,7 +526,8 @@
                             </div>
                         </div>
 
-                        <button class="collapse-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#modelSelection" aria-expanded="false" aria-controls="modelSelection">
+                        <button class="collapse-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#modelSelection" aria-expanded="false" aria-controls="modelSelection">
                             <i class="fas fa-chevron-down"></i>
                             More Options
                         </button>
@@ -534,752 +552,174 @@
                 </div>
             </div>
 
-            <div class="stats-container fade-in">
-                <div class="stat-card">
-                    <div class="stat-value" id="rmse-value">28.50</div>
-                    <div class="stat-label">Test RMSE (Original Scale)</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="mean-turnover-value">147.33</div>
-                    <div class="stat-label">Mean Turnover</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="percentage-error-value">19.35%</div>
-                    <div class="stat-label">Error Percentage</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">500</div>
-                    <div class="stat-label">Total Stores</div>
-                </div>
-            </div>
 
-            <div class="chart-section fade-in">
-                <h3 class="section-title">
-                    <i class="fas fa-chart-line"></i>
-                    Turnover Analysis For Two Weeks
-                    <span id="selectedStoreInfo" style="font-size: 0.9em; margin-left: 10px; color: #3b82f6; display: none;">
-                        (Store: <span id="selectedStoreNumber"></span>)
-                    </span>
-                </h3>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="analysis-card">
-                            <div class="chart-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                <span>Turnover Values</span>
-                                <div class="stat-summary">
-                                    <div id="avgTurnover" style="color: #3b82f6;">Avg: --</div>
-                                    <div id="maxTurnover" style="color: #10b981;">Max: --</div>
-                                </div>
-                            </div>
-                            <div class="chart-container" style="background: rgba(17, 24, 39, 0.4); border-radius: 8px; padding: 10px;">
-                                <canvas id="chart1"></canvas>
-                            </div>
-                            <div class="turnover-list-container">
-                                <div class="turnover-list-header">
-                                    <div class="turnover-list-title">Daily Values</div>
-                                    <button class="download-values-btn" id="downloadDailyValues">
-                                        <i class="fas fa-download"></i>
-                                        Download Values
-                                    </button>
-                                </div>
-                                <ul class="turnover-list" id="turnoverList">
-                                </ul>
-                                <div class="turnover-list-footer">
-                                    <div class="list-stats">
-                                        <span id="listTotal">Total: --</span> |
-                                        <span id="listAvg">Average: --</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="analysis-card">
-                            <div class="chart-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                <span>Turnover Trend</span>
-                                <div class="trend-summary">
-                                    <div id="trendDirection" style="color: #3b82f6;">Trend: --</div>
-                                    <div id="predictionPeriod" style="color: #10b981;">Period: 14 Days</div>
-                                </div>
-                            </div>
-                            <div class="chart-container" style="background: rgba(17, 24, 39, 0.4); border-radius: 8px; padding: 10px;">
-                                <canvas id="chart2"></canvas>
-                            </div>
-                            <div style="margin-top: 15px; display: flex; justify-content: flex-end;">
-                                <button id="downloadPredictions" class="modern-button" style="display: none; background: #3b82f6; padding: 10px 20px;">
-                                    <i class="fas fa-download"></i> Download Store Results
-                                </button>
-                            </div>
-                        </div>
+            <!-- Loading Overlay -->
+            <div class="loading-overlay">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Loading store data...</div>
+                    <div class="loading-progress">
+                        <div class="progress-bar"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="chart-section fade-in">
-                <h3 class="section-title">
-                    <i class="fas fa-chart-line"></i>
-                    Actual vs Predicted Values
-                </h3>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="analysis-card">
-                            <div class="chart-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                <span>Actual vs Predicted Values</span>
-                                <div class="comparison-summary">
-                                    <div id="accuracyScore" style="color: #3b82f6;">Accuracy: --</div>
-                                    <div id="maeScore" style="color: #10b981;">MAE: --</div>
-                                    <div id="mapeScore" style="color: #f59e0b;">MAPE: --%</div>
-                                </div>
-                            </div>
-                            <div class="chart-container" style="background: rgba(17, 24, 39, 0.4); border-radius: 8px; padding: 10px;">
-                                <canvas id="chart3"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+            <script src="https://unpkg.com/leaflet.markercluster@1.5.0/dist/leaflet.markercluster.js"></script>
+            <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                var map, markers, storeData;
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <div class="loading-text">Loading store data...</div>
-            <div class="loading-progress">
-                <div class="progress-bar"></div>
-            </div>
-        </div>
-    </div>
+                function initializeMap() {
+                    map = L.map('map').setView([49.511979, 11.2811775], 6);
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.0/dist/leaflet.markercluster.js"></script>
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        var map, markers, storeData;
+                    L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {}).addTo(map);
+                    L.Control.geocoder().addTo(map);
 
-        function initializeMap() {
-            map = L.map('map').setView([49.511979, 11.2811775], 6);
+                    markers = L.markerClusterGroup();
 
-            L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {}).addTo(map);
-            L.Control.geocoder().addTo(map);
+                    fetch('/uploads/markers.json')
+                        .then(response => response.json())
+                        .then(data => {
+                            storeData = data;
+                            const uniqueMarkers = new Set();
+                            const storeNumbers = new Set();
 
-            markers = L.markerClusterGroup();
+                            data.forEach(function (store) {
+                                const store_no = store.store_no;
+                                const latitude = store.latitude;
+                                const longitude = store.longitude;
 
-            fetch('/uploads/markers.json')
-                .then(response => response.json())
-                .then(data => {
-                    storeData = data;
-                    const uniqueMarkers = new Set();
-                    const storeNumbers = new Set();
+                                const coordinateString = `${latitude},${longitude}`;
 
-                    data.forEach(function (store) {
-                        const store_no = store.store_no;
-                        const latitude = store.latitude;
-                        const longitude = store.longitude;
+                                storeNumbers.add(store_no);
 
-                        const coordinateString = `${latitude},${longitude}`;
+                                if (!uniqueMarkers.has(coordinateString)) {
+                                    uniqueMarkers.add(coordinateString);
 
-                        storeNumbers.add(store_no);
-
-                        if (!uniqueMarkers.has(coordinateString)) {
-                            uniqueMarkers.add(coordinateString);
-
-                            const marker = L.marker([latitude, longitude])
-                                .bindPopup(`Store No: ${store_no}`, { permanent: true })
-                                .openPopup();
-                            markers.addLayer(marker);
-                        }
-                    });
-
-                    const sortedStoreNumbers = Array.from(storeNumbers).sort((a, b) => a - b);
-
-                    const dropdown = document.getElementById('search-select');
-                    sortedStoreNumbers.forEach(storeNo => {
-                        const option = document.createElement('option');
-                        option.value = storeNo;
-                        option.textContent = storeNo;
-                        dropdown.appendChild(option);
-                    });
-
-                    map.addLayer(markers);
-                })
-                .catch(error => {
-                    console.error('Error fetching or processing markers:', error);
-                });
-        }
-
-        function searchStore() {
-            const storeNo = document.getElementById('search-select').value.trim();
-
-            if (!storeNo) {
-                return;
-            }
-
-            const store = storeData.find(item => item.store_no.toString() === storeNo);
-
-            if (store) {
-                const { latitude, longitude } = store;
-                const latLng = L.latLng(latitude, longitude);
-
-                map.setView(latLng, 14);
-
-                const storeMarker = L.marker(latLng).bindPopup(`Store No: ${storeNo}`, { permanent: true });
-                storeMarker.addTo(map);
-                storeMarker.openPopup();
-            } else {
-                alert("Store number not found: " + storeNo);
-            }
-        }
-
-        document.getElementById('search-select').addEventListener('change', function () {
-            searchStore();
-        });
-
-        document.getElementById('showResults').addEventListener('click', function () {
-            const button = this;
-            button.classList.add('loading');
-            
-            setTimeout(() => {
-                button.classList.remove('loading');
-                document.querySelector('.chart-section').scrollIntoView({ behavior: 'smooth' });
-            }, 1000);
-        });
-
-        async function downloadAllResults() {
-            const button = document.getElementById('downloadAllResults');
-            const spinner = button.querySelector('.spinner');
-            
-            try {
-                button.disabled = true;
-                spinner.style.display = 'inline-block';
-                
-                const response = await fetch('/download-all-predictions/', {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                    }
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Download failed: ${errorText}`);
-                }
-                
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'store_predictions.xlsx';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-            } catch (error) {
-                console.error('Download error:', error);
-                alert('Failed to download results: ' + error.message);
-            } finally {
-                button.disabled = false;
-                spinner.style.display = 'none';
-            }
-        }
-
-        document.getElementById('downloadAllResults').addEventListener('click', downloadAllResults);
-
-        document.addEventListener('DOMContentLoaded', initializeMap);
-    </script>
-
-    <script>
-        document.querySelector('.collapse-button').addEventListener('click', function() {
-            this.classList.toggle('collapsed');
-        });
-    </script>
-
-    <script>
-        $('#search-select').dropdown(); 
-    </script>
-
-    <script>
-        let turnoverValuesChart = null;
-        let turnoverGraphChart = null;
-        let comparisonChart = null;
-        let currentStoreNo = null;
-        let currentData = null;
-        let loadingTimeout = null;
-
-        function calculateTrend(data) {
-            const values = data.map(p => p.turnover);
-            const firstHalf = values.slice(0, 7);
-            const secondHalf = values.slice(7);
-            const firstHalfAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
-            const secondHalfAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-            
-            if (secondHalfAvg > firstHalfAvg * 1.05) {
-                return 'Increasing ↑';
-            } else if (secondHalfAvg < firstHalfAvg * 0.95) {
-                return 'Decreasing ↓';
-            } else {
-                return 'Stable →';
-            }
-        }
-
-        function calculateAccuracy(actual, predicted) {
-            const n = actual.length;
-            let totalError = 0;
-            let totalActual = 0;
-            let totalPercentageError = 0;
-            
-            for (let i = 0; i < n; i++) {
-                const error = Math.abs(actual[i] - predicted[i]);
-                totalError += error;
-                totalActual += actual[i];
-                
-                if (actual[i] !== 0) { 
-                    totalPercentageError += (error / actual[i]) * 100;
-                }
-            }
-            
-            const mae = totalError / n;
-            const accuracy = 100 * (1 - totalError / totalActual);
-            const mape = totalPercentageError / n;
-            
-            return {
-                accuracy: accuracy.toFixed(2),
-                mae: mae.toFixed(2),
-                mape: mape.toFixed(2)
-            };
-        }
-
-        function showStoreResults() {
-            const storeNo = document.getElementById('search-select').value;
-            if (!storeNo) {
-                alert('Please select a store');
-                return;
-            }
-
-            currentStoreNo = storeNo;
-            const progressInterval = showLoading();
-
-            updateLoadingText('Clearing previous data...');
-            if (turnoverValuesChart) turnoverValuesChart.destroy();
-            if (turnoverGraphChart) turnoverGraphChart.destroy();
-            if (comparisonChart) comparisonChart.destroy();
-
-            // Reset statistics
-            updateLoadingText('Fetching store data...');
-            document.getElementById('turnoverList').innerHTML = '';
-            document.getElementById('listTotal').textContent = 'Total: --';
-            document.getElementById('listAvg').textContent = 'Average: --';
-            document.getElementById('avgTurnover').innerHTML = 'Avg: --';
-            document.getElementById('maxTurnover').innerHTML = 'Max: --';
-            document.getElementById('trendDirection').innerHTML = 'Trend: --';
-            document.getElementById('accuracyScore').innerHTML = 'Accuracy: --';
-            document.getElementById('maeScore').innerHTML = 'MAE: --';
-            document.getElementById('mapeScore').innerHTML = 'MAPE: --%';
-
-            // Update store info display
-            document.getElementById('selectedStoreInfo').style.display = 'inline';
-            document.getElementById('selectedStoreNumber').textContent = storeNo;
-
-            // Fetch data
-            fetch(`/get_store_predictions/?store_no=${storeNo}`)
-                .then(response => response.json())
-                .then(data => {
-                    updateLoadingText('Processing data...');
-                    currentData = data; // Global data'yı güncelle
-                    
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-
-                    // Calculate and update statistics
-                    updateLoadingText('Updating statistics...');
-                    const values = data.predictions.map(p => p.turnover);
-                    const avgTurnover = values.reduce((a, b) => a + b, 0) / values.length;
-                    const maxTurnover = Math.max(...values);
-                    const trend = calculateTrend(data.predictions);
-                    const actualValues = data.actual_2023.map(a => a.turnover);
-                    const predictedValues = data.predicted_2023.map(p => p.turnover);
-                    const metrics = calculateAccuracy(actualValues, predictedValues);
-
-                    // Update UI
-                    updateLoadingText('Creating visualizations...');
-                    document.getElementById('avgTurnover').innerHTML = `Avg: ${avgTurnover.toFixed(2)}`;
-                    document.getElementById('maxTurnover').innerHTML = `Max: ${maxTurnover.toFixed(2)}`;
-                    document.getElementById('trendDirection').innerHTML = `Trend: ${trend}`;
-                    document.getElementById('accuracyScore').innerHTML = `Accuracy: ${metrics.accuracy}%`;
-                    document.getElementById('maeScore').innerHTML = `MAE: ${metrics.mae}`;
-                    document.getElementById('mapeScore').innerHTML = `MAPE: ${metrics.mape}%`;
-
-                    // Update comparison chart if it exists
-                    if (typeof window.updateModelComparison === 'function') {
-                        // Fetch model comparison data separately
-                        fetch(`/get_model_comparison/?store_no=${storeNo}`)
-                            .then(response => response.json())
-                            .then(comparisonData => {
-                                window.updateModelComparison(
-                                    comparisonData.actual_2023,
-                                    comparisonData.rf_predicted_2023,
-                                    comparisonData.lstm_predicted_2023
-                                );
-                            })
-                            .catch(error => {
-                                console.error('Error fetching model comparison:', error);
+                                    const marker = L.marker([latitude, longitude])
+                                        .bindPopup(`Store No: ${store_no}`, { permanent: true })
+                                        .openPopup();
+                                    markers.addLayer(marker);
+                                }
                             });
+
+                            const sortedStoreNumbers = Array.from(storeNumbers).sort((a, b) => a - b);
+
+                            const dropdown = document.getElementById('search-select');
+                            sortedStoreNumbers.forEach(storeNo => {
+                                const option = document.createElement('option');
+                                option.value = storeNo;
+                                option.textContent = storeNo;
+                                dropdown.appendChild(option);
+                            });
+
+                            map.addLayer(markers);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching or processing markers:', error);
+                        });
+                }
+
+                function searchStore() {
+                    const storeNo = document.getElementById('search-select').value.trim();
+
+                    if (!storeNo) {
+                        return;
                     }
 
-                    // Update turnover list
-                    updateTurnoverList(data);
+                    const store = storeData.find(item => item.store_no.toString() === storeNo);
 
-                    // Create charts
-                    createCharts(data, storeNo);
+                    if (store) {
+                        const { latitude, longitude } = store;
+                        const latLng = L.latLng(latitude, longitude);
 
-                    // Hide loading
-                    clearInterval(progressInterval);
-                    hideLoading();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    clearInterval(progressInterval);
-                    hideLoading();
-                    alert(`Error: ${error.message}`);
+                        map.setView(latLng, 14);
+
+                        const storeMarker = L.marker(latLng).bindPopup(`Store No: ${storeNo}`, { permanent: true });
+                        storeMarker.addTo(map);
+                        storeMarker.openPopup();
+                    } else {
+                        alert("Store number not found: " + storeNo);
+                    }
+                }
+
+                document.getElementById('search-select').addEventListener('change', function () {
+                    searchStore();
                 });
-        }
 
-        // Add event listeners
-        document.getElementById('showResults').addEventListener('click', showStoreResults);
-        document.getElementById('downloadPredictions').addEventListener('click', function() {
-            if (!currentStoreNo) {
-                alert('Please select a store first');
-                return;
-            }
-            
-            const button = document.getElementById('downloadPredictions');
-            button.classList.add('loading');
-            
-            window.location.href = `/download-store-predictions/?store_no=${currentStoreNo}`;
-            
-            setTimeout(() => {
-                button.classList.remove('loading');
-            }, 1000);
-        });
+                document.getElementById('showResults').addEventListener('click', function () {
+                    const button = this;
+                    button.classList.add('loading');
 
-        function showLoading() {
-            const overlay = document.querySelector('.loading-overlay');
-            const progressBar = document.querySelector('.progress-bar');
-            overlay.style.display = 'flex';
-            
-            let progress = 0;
-            const interval = setInterval(() => {
-                if (progress < 90) {
-                    progress += Math.random() * 10;
-                    progressBar.style.width = `${progress}%`;
-                }
-            }, 200);
+                    setTimeout(() => {
+                        button.classList.remove('loading');
+                        document.querySelector('.chart-section').scrollIntoView({ behavior: 'smooth' });
+                    }, 1000);
+                });
 
-            loadingTimeout = setTimeout(() => {
-                clearInterval(interval);
-                hideLoading();
-                alert('Loading is taking longer than expected. Please try again.');
-            }, 30000); 
+                async function downloadAllResults() {
+                    const button = document.getElementById('downloadAllResults');
+                    const spinner = button.querySelector('.spinner');
 
-            return interval;
-        }
+                    try {
+                        button.disabled = true;
+                        spinner.style.display = 'inline-block';
 
-        function hideLoading() {
-            const overlay = document.querySelector('.loading-overlay');
-            const progressBar = document.querySelector('.progress-bar');
-            
-            progressBar.style.width = '100%';
-            
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                progressBar.style.width = '0%';
-                if (loadingTimeout) {
-                    clearTimeout(loadingTimeout);
-                    loadingTimeout = null;
-                }
-            }, 300);
-        }
-
-        function updateLoadingText(text) {
-            document.querySelector('.loading-text').textContent = text;
-        }
-
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
-        }
-
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('tr-TR', {
-                style: 'currency',
-                currency: 'EUR'
-            }).format(value);
-        }
-
-        function updateTurnoverList(data) {
-            const list = document.getElementById('turnoverList');
-            const total = data.predictions.reduce((sum, p) => sum + p.turnover, 0);
-            const avg = total / data.predictions.length;
-            
-            list.innerHTML = '';
-            
-            data.predictions.forEach(p => {
-                const li = document.createElement('li');
-                li.className = 'turnover-item';
-                li.innerHTML = `
-                    <span class="turnover-date">${formatDate(p.date)}</span>
-                    <span class="turnover-value">${formatCurrency(p.turnover)}</span>
-                `;
-                list.appendChild(li);
-            });
-            
-            //  güncelle
-            document.getElementById('listTotal').textContent = `Total: ${formatCurrency(total)}`;
-            document.getElementById('listAvg').textContent = `Average: ${formatCurrency(avg)}`;
-        }
-
-        function createCharts(data, storeNo) {
-            const chartOptions1 = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Daily Turnover Values',
-                        color: '#fff'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `Turnover: ${formatCurrency(context.parsed.y)}`;
+                        const response = await fetch('/download-all-predictions/', {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                             }
+                        });
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            throw new Error(`Download failed: ${errorText}`);
                         }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { color: '#fff' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    },
-                    y: {
-                        ticks: { 
-                            color: '#fff',
-                            callback: function(value) {
-                                return formatCurrency(value);
-                            }
-                        },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'store_predictions.xlsx';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    } catch (error) {
+                        console.error('Download error:', error);
+                        alert('Failed to download results: ' + error.message);
+                    } finally {
+                        button.disabled = false;
+                        spinner.style.display = 'none';
                     }
                 }
-            };
 
-            const chartOptions2 = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Turnover Trend',
-                        color: '#fff'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `Turnover: ${formatCurrency(context.raw)}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { color: '#fff' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    },
-                    y: {
-                        ticks: { 
-                            color: '#fff',
-                            callback: function(value) {
-                                return formatCurrency(value);
-                            }
-                        },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    }
-                }
-            };
+                document.getElementById('downloadAllResults').addEventListener('click', downloadAllResults);
 
-            const chartOptions3 = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: `Store ${storeNo} - Actual vs Predicted Values (2023)`,
-                        color: '#fff'
-                    },
-                    legend: {
-                        labels: {
-                            color: '#fff'
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { color: '#fff' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    },
-                    y: {
-                        ticks: { 
-                            color: '#fff',
-                            callback: function(value) {
-                                return formatCurrency(value);
-                            }
-                        },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                    }
-                }
-            };
+                document.addEventListener('DOMContentLoaded', initializeMap);
+            </script>
 
-            const ctx1 = document.getElementById('chart1').getContext('2d');
-            turnoverValuesChart = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: data.predictions.map(p => formatDate(p.date)),
-                    datasets: [{
-                        data: data.predictions.map(p => p.turnover),
-                        backgroundColor: '#3b82f6',
-                        borderColor: '#3b82f6',
-                        borderWidth: 1
-                    }]
-                },
-                options: chartOptions1
-            });
+            <script>
+                document.querySelector('.collapse-button').addEventListener('click', function () {
+                    this.classList.toggle('collapsed');
+                });
+            </script>
 
-            const ctx2 = document.getElementById('chart2').getContext('2d');
-            turnoverGraphChart = new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: data.predictions.map(p => formatDate(p.date)),
-                    datasets: [{
-                        data: data.predictions.map(p => p.turnover),
-                        borderColor: '#3b82f6',
-                        tension: 0.1,
-                        fill: false
-                    }]
-                },
-                options: chartOptions2
-            });
+            <script>
+                $('#search-select').dropdown(); 
+            </script>
 
-            const ctx3 = document.getElementById('chart3').getContext('2d');
-            comparisonChart = new Chart(ctx3, {
-                type: 'line',
-                data: {
-                    labels: data.actual_2023.map(a => formatDate(a.date)),
-                    datasets: [
-                        {
-                            label: 'Actual Values (2023)',
-                            data: data.actual_2023.map(a => a.turnover),
-                            borderColor: '#10b981',
-                            tension: 0.1,
-                            fill: false
-                        },
-                        {
-                            label: 'Predicted Values (2023)',
-                            data: data.predicted_2023.map(p => p.turnover),
-                            borderColor: '#3b82f6',
-                            tension: 0.1,
-                            fill: false
-                        }
-                    ]
-                },
-                options: chartOptions3
-            });
-        }
 
-        document.getElementById('downloadDailyValues').addEventListener('click', function() {
-            if (!currentData || !currentData.predictions) {
-                alert('No data available to download');
-                return;
-            }
-
-            const csvContent = [
-                ['Date', 'Turnover'],
-                ...currentData.predictions.map(p => [p.date, p.turnover])
-            ].map(row => row.join(',')).join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `daily_turnover_values_${currentStoreNo}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-    </script>
-
-    <script>
-        function updateModelStats(modelType) {
-            // Convert model type to uppercase for consistent comparison
-            modelType = modelType.toUpperCase();
-            
-            if (modelType === 'LSTM' || modelType === 'lstm') {
-                document.getElementById('rmse-value').textContent = '38.94';
-                document.getElementById('mean-turnover-value').textContent = '132.74';
-                document.getElementById('percentage-error-value').textContent = '29.34%';
-            } else if (modelType === 'RF') {
-                document.getElementById('rmse-value').textContent = '28.50';
-                document.getElementById('mean-turnover-value').textContent = '147.33';
-                document.getElementById('percentage-error-value').textContent = '19.35%';
-            }
-        }
-
-        // Listen for model changes from selection.html
-        window.addEventListener('message', function(event) {
-            if (event.data && event.data.modelType) {
-                updateModelStats(event.data.modelType);
-                // Update the local model select to match
-                const modelSelect = document.getElementById('model-select');
-                modelSelect.value = event.data.modelType.toLowerCase();
-            }
-        });
-
-        // Listen for local model changes
-        document.getElementById('model-select').addEventListener('change', function() {
-            updateModelStats(this.value);
-        });
-
-        // Initialize with default values
-        document.addEventListener('DOMContentLoaded', function() {
-            const modelSelect = document.getElementById('model-select');
-            updateModelStats(modelSelect.value || 'RF');
-        });
-    </script>
 </body>
 
 </html>
 
+{% include "turnovergraphs.html" %}
 {% include "compare.html" %}
