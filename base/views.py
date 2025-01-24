@@ -17,7 +17,8 @@ from keras.models import load_model as keras_load_model
 RF_MODEL_PATH = os.path.join(settings.BASE_DIR, 'ml_models', 'random_forest_best_model.pkl')
 LSTM_MODEL_PATH = os.path.join(settings.BASE_DIR, 'ml_models', 'lstm_model.keras')
 
-# Global model cache
+# Global model cache 
+# Using for store previously loaded models
 _model_cache = {}
 
 def load_model(model_choice):
@@ -66,6 +67,7 @@ def predict_turnover(store_data, model_choice):
     return results
 
 def save_markers_to_json(data, json_file_path):
+    # Mapping of store numbers to their respective latitude and longitude coordinates for point on the map
     markers = data[['store_no', 'latitude', 'longitude']].to_dict(orient='records')
     with open(json_file_path, 'w') as f:
         json.dump(markers, f)
